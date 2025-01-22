@@ -1,0 +1,88 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\USUARIO\\Documents\\Path to Dark Side\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{CDF35CF1-9135-41D7-B3D1-4068B3D25427}|Path to Dark Side.csproj|c:\\users\\usuario\\documents\\path to dark side\\main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CDF35CF1-9135-41D7-B3D1-4068B3D25427}|Path to Dark Side.csproj|solutionrelative:main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CDF35CF1-9135-41D7-B3D1-4068B3D25427}|Path to Dark Side.csproj|c:\\users\\usuario\\documents\\path to dark side\\content\\utils\\drawengine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CDF35CF1-9135-41D7-B3D1-4068B3D25427}|Path to Dark Side.csproj|solutionrelative:content\\utils\\drawengine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CDF35CF1-9135-41D7-B3D1-4068B3D25427}|Path to Dark Side.csproj|c:\\users\\usuario\\documents\\path to dark side\\content\\bullets\\emmiters\\patterns\\playerfocusshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CDF35CF1-9135-41D7-B3D1-4068B3D25427}|Path to Dark Side.csproj|solutionrelative:content\\bullets\\emmiters\\patterns\\playerfocusshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CDF35CF1-9135-41D7-B3D1-4068B3D25427}|Path to Dark Side.csproj|c:\\users\\usuario\\documents\\path to dark side\\player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CDF35CF1-9135-41D7-B3D1-4068B3D25427}|Path to Dark Side.csproj|solutionrelative:player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "DrawEngine.cs",
+              "DocumentMoniker": "C:\\Users\\USUARIO\\Documents\\Path to Dark Side\\Content\\Utils\\DrawEngine.cs",
+              "RelativeDocumentMoniker": "Content\\Utils\\DrawEngine.cs",
+              "ToolTip": "C:\\Users\\USUARIO\\Documents\\Path to Dark Side\\Content\\Utils\\DrawEngine.cs",
+              "RelativeToolTip": "Content\\Utils\\DrawEngine.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-22T02:08:25.088Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "PlayerFocusShot.cs",
+              "DocumentMoniker": "C:\\Users\\USUARIO\\Documents\\Path to Dark Side\\Content\\Bullets\\Emmiters\\Patterns\\PlayerFocusShot.cs",
+              "RelativeDocumentMoniker": "Content\\Bullets\\Emmiters\\Patterns\\PlayerFocusShot.cs",
+              "ToolTip": "C:\\Users\\USUARIO\\Documents\\Path to Dark Side\\Content\\Bullets\\Emmiters\\Patterns\\PlayerFocusShot.cs",
+              "RelativeToolTip": "Content\\Bullets\\Emmiters\\Patterns\\PlayerFocusShot.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAABkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-22T02:07:33Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Player.cs",
+              "DocumentMoniker": "C:\\Users\\USUARIO\\Documents\\Path to Dark Side\\Player.cs",
+              "RelativeDocumentMoniker": "Player.cs",
+              "ToolTip": "C:\\Users\\USUARIO\\Documents\\Path to Dark Side\\Player.cs",
+              "RelativeToolTip": "Player.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAwwBcAAABcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-20T21:56:18.737Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Main.cs",
+              "DocumentMoniker": "C:\\Users\\USUARIO\\Documents\\Path to Dark Side\\Main.cs",
+              "RelativeDocumentMoniker": "Main.cs",
+              "ToolTip": "C:\\Users\\USUARIO\\Documents\\Path to Dark Side\\Main.cs",
+              "RelativeToolTip": "Main.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAgwBwAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-13T21:58:10.391Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

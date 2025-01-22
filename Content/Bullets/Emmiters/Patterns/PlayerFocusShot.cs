@@ -1,0 +1,24 @@
+﻿using Godot;
+using PathtoDarkSide.Content.Utils;
+
+namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
+{
+    public class PlayerFocusShot : Pattern
+    {
+        private float rotation = 0;
+
+        public override void Shoot(BulletField field, Vector2 position, int cycle, int maxCycle, Vector2 target, 
+            int dificulty, int speed, params float[] parameters)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                Vector2 offset = new Vector2(Mathf.Sin((rotation + i) * 5) * 8, 
+                    Mathf.Sin((rotation + i) * 8) * 20);
+                field.AddProjectile(position + offset - new Vector2(10, 0), new Vector2(1, 0), 0, 20, sizeX: 30,
+                     sizeY: 30, hitLayer: (int)HitLayers.Enemy, visualParam1: (int)Textures.Star, r: 0.8f, g: 0.1f, 
+                     b: 0.865f, a: 0.35f, ai1: 0.2f);
+            }
+            rotation += 0.01f;
+        }
+    }
+}
