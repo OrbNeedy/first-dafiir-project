@@ -4,7 +4,7 @@ using PathtoDarkSide.Content.Utils;
 using static PathtoDarkSide.Content.Utils.VisualTables;
 using System;
 using System.Collections.Generic;
-using static PathtoDarkSide.Content.Utils.TexturesTable;
+using PathtoDarkSide.Content.Enemies;
 
 public enum BulletAttributes
 {
@@ -52,28 +52,24 @@ public enum EffectAttributes
 }
 
 namespace PathtoDarkSide.Content {
-    public class PlayerHitEventArgs : EventArgs
+    /*public class CollisionEventArgs : EventArgs
     {
-        public float damage { get; }
-        public PlayerHitEventArgs(float damage)
-        {
-            this.damage = damage;
-        }
-    }
+        public int index;
+        public int collisionType;
+        public float strength;
+    }*/
 
     public class BulletField
     {
         Predicate<float[]> deleteConditions;
-        public event EventHandler<PlayerHitEventArgs> PlayerHit;
+        //public event EventHandler<CollisionEventArgs> Collision;
 
         public Rect2 Margin;
+        public Main main;
         public static Bullet[] BulletAIs = new Bullet[] { new Bullet() };
         public List<float[]> ActiveBullets = new List<float[]>();
-        public Dictionary<int, List<Aabb>> Colliders = new Dictionary<int, List<Aabb>>()
-        {
-            [(int)HitLayers.Player] = new List<Aabb>(),
-            [(int)HitLayers.Enemy] = new List<Aabb>()
-        };
+
+        public List<Enemy> ActiveEnemies = new List<Enemy>();
         
         public BulletField(Rect2 margin) 
         {
@@ -117,11 +113,12 @@ namespace PathtoDarkSide.Content {
             }
 
             ActiveBullets.RemoveAll(deleteConditions);
+        }
 
-            foreach (var col in Colliders)
-            {
-                col.Value.Clear();
-            }
+        public void RegisterEnemyHitbox(out int? index)
+        {
+            index = null;
+
         }
 
         public void AddProjectile(Vector2 position, Vector2 direction, float rotation, float speed, float shape = 0,
@@ -172,24 +169,33 @@ namespace PathtoDarkSide.Content {
         public bool DeleteConditions(float[] bullet)
         {
             if (CheckOutOfBounds(bullet)) return true;
-            foreach (Aabb aabb in Colliders[(int)bullet[(int)BulletAttributes.HitLayer]])
+            switch (bullet[(int)BulletAttributes.HitLayer])
             {
-                if (Collide(bullet, aabb))
-                {
-                    if ((int)bullet[(int)BulletAttributes.HitLayer] == (int)HitLayers.Player)
+                case (int)HitLayers.Player:
+                    if (Collide(bullet, main.player.hitbox))
                     {
-                        OnPlayerHit(new PlayerHitEventArgs(bullet[(int)BulletAttributes.Damage]));
+                        main.player.OnHit(bullet[(int)BulletAttributes.Damage]);
+                        return true;
                     }
-                    return true;
-                }
+                    return false;
+                case (int)HitLayers.Enemy:
+                    foreach (Enemy enemy in main.enemies)
+                    {
+                        if (Collide(bullet, enemy.hitbox))
+                        {
+                            enemy.OnHit(bullet[(int)BulletAttributes.Damage]);
+                            return true;
+                        }
+                    }
+                    return false;
             }
             return false;
         }
 
-        private void OnPlayerHit(PlayerHitEventArgs e)
+        /*private void OnCollide(CollisionEventArgs e)
         {
-            PlayerHit?.Invoke(this, e);
-        }
+            Collision?.Invoke(this, e);
+        }*/
 
         public bool CheckOutOfBounds(float[] bullet)
         {

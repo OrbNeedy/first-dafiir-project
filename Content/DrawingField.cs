@@ -24,8 +24,9 @@ public partial class DrawingField : Control
         Vector2 spritePosition = new Vector2();
         Vector2 spriteOffset = new Vector2();
         Vector2 scale = new Vector2();
-        float rotation;
+        float rotation = 0;
         Color modulate = new Color();
+        int frame = 0;
 
         DrawQueue.Sort((x, y) => (int)x[(int)EffectAttributes.Layer] - (int)y[(int)EffectAttributes.Layer]);
 
@@ -40,6 +41,13 @@ public partial class DrawingField : Control
             modulate.G = 1;
             modulate.B = 1;
             modulate.A = 1;
+            frame = (int)drawInstruction[(int)EffectAttributes.Frame];
+
+            if (frame >= TexturesTable.LoadedTextures[(int)drawInstruction[(int)EffectAttributes.Texture]].Length)
+            {
+                frame = TexturesTable.LoadedTextures[(int)drawInstruction[(int)EffectAttributes.Texture]].Length - 1;
+            }
+            if (frame < 0) frame = 0;
 
             /*transformMatrix.X.X = drawInstruction[(int)EffectAttributes.TransformXX];
             transformMatrix.X.Y = drawInstruction[(int)EffectAttributes.TransformXY];
@@ -51,8 +59,8 @@ public partial class DrawingField : Control
             spritePosition.X = drawInstruction[(int)EffectAttributes.PositionX];
             spritePosition.Y = drawInstruction[(int)EffectAttributes.PositionY];
 
-            spriteOffset = (TexturesTable.LoadedTextures[(int)drawInstruction[(int)EffectAttributes.Texture]]
-                [(int)drawInstruction[(int)EffectAttributes.Frame]].GetSize()) / 2;
+            spriteOffset = TexturesTable.LoadedTextures[(int)drawInstruction[(int)EffectAttributes.Texture]]
+                [frame].GetSize() / 2;
 
             modulate.R = drawInstruction[(int)EffectAttributes.R];
             modulate.G = drawInstruction[(int)EffectAttributes.G];
@@ -65,7 +73,7 @@ public partial class DrawingField : Control
 
             DrawSetTransform(spritePosition, rotation, scale);
             DrawTexture(TexturesTable.LoadedTextures[(int)drawInstruction[(int)EffectAttributes.Texture]]
-                [(int)drawInstruction[(int)EffectAttributes.Frame]], -spriteOffset, modulate);
+                [frame], -spriteOffset, modulate);
 
             drawInstruction[(int)EffectAttributes.Time] -= 1;
 

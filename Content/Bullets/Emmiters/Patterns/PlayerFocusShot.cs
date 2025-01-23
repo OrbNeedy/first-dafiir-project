@@ -16,7 +16,7 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
                     Mathf.Sin((rotation + i) * 8) * 20);
                 field.AddProjectile(position + offset - new Vector2(10, 0), new Vector2(1, 0), 0, 20, sizeX: 30,
                      sizeY: 30, hitLayer: (int)HitLayers.Enemy, visualParam1: (int)Textures.Star, r: 0.8f, g: 0.1f, 
-                     b: 0.865f, a: 0.35f, ai1: 0.2f);
+                     b: 0.865f, a: 0.35f, ai1: 0.2f, damage: 1);
             }
             rotation += 0.01f;
         }

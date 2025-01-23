@@ -21,6 +21,7 @@ namespace PathtoDarkSide.Content.Utils
     public enum Textures
     {
         Player,
+        Pixie,
         Outer,
         Inner,
         Star

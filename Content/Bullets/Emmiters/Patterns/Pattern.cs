@@ -12,7 +12,7 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
             Vector2 direction = position.DirectionTo(target);
             for (int i = 0; i < bullets; i++)
             {
-                field.AddProjectile(position, direction, 0, 1 + (speed));
+                field.AddProjectile(position, direction, 0, 1 + (speed), visualParam1: (int)Textures.Inner);
                 direction = direction.Rotated(MathConsts.TwoPi/bullets);
             }
         }

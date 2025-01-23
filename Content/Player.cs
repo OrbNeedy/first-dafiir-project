@@ -1,16 +1,16 @@
 using Godot;
-using PathtoDarkSide.Content;
 using PathtoDarkSide.Content.Bullets.Emmiters;
 using PathtoDarkSide.Content.Bullets.Emmiters.Patterns;
 using PathtoDarkSide.Content.Utils;
 
-namespace PathtoDarkSide
+namespace PathtoDarkSide.Content
 {
     public class Player
     {
         public Vector2 position;
         public Emitter[] emitters;
         private int emitterOrbit = 0;
+        public Aabb hitbox;
 
         public bool shooting = false;
         public Vector2 velocity = new Vector2();
@@ -23,7 +23,8 @@ namespace PathtoDarkSide
         {
             emitters = new Emitter[] { new Emitter(position, new PlayerFocusShot(), 5, 1) };
             this.field = field;
-            field.PlayerHit += HandleOnHit;
+            hitbox = new Aabb(new Vector3(position.X-10, position.Y-10, 0), new Vector3(20, 20, 1));
+            //field.PlayerHit += HandleOnHit;
         }
 
         public void HandleInputs()
@@ -60,7 +61,7 @@ namespace PathtoDarkSide
         {
             velocity = velocity.Normalized();
 
-            float tempSpeed = focus? speed*2/5 : speed;
+            float tempSpeed = focus ? speed * 2 / 5 : speed;
 
             position += velocity * tempSpeed;
             if (position.X < margin.Position.X)
@@ -93,11 +94,8 @@ namespace PathtoDarkSide
             }
             shooting = finalShoot;
 
-            if (iFrames <= 0)
-            {
-                field.Colliders[(int)HitLayers.Player].Add(new Aabb(
-                    new Vector3(position.X - 10, position.Y - 10, 0), new Vector3(20, 20, 1)));
-            }
+            // Subtract half of the hitbox's size to it's position so it will be in the middle
+            hitbox = new Aabb(new Vector3(position.X - 10, position.Y - 10, 0), new Vector3(20, 20, 1));
 
             velocity.X = 0;
             velocity.Y = 0;
@@ -106,16 +104,21 @@ namespace PathtoDarkSide
             if (iFrames > 0) iFrames--;
         }
 
-        public void HandleOnHit(object sender, PlayerHitEventArgs e)
+        public void OnHit(float damage)
         {
             iFrames = 60;
         }
+
+        /*public void HandleOnHit(object sender, PlayerHitEventArgs e)
+        {
+            iFrames = 60;
+        }*/
 
         public void Draw()
         {
             Color color = new Color(1, 1, 1);
             if (iFrames > 0) color = new Color(7f, 0.2f, 0.2f, 0.5f);
-            DrawEngine.AddDraw((int)Textures.Player, position.X, position.Y, 0, layer: -1, r: color.R, 
+            DrawEngine.AddDraw((int)Textures.Player, position.X, position.Y, 0, layer: -1, r: color.R,
                 g: color.G, b: color.B, a: color.A);
         }
     }
