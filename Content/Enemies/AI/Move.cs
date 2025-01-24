@@ -26,7 +26,7 @@ namespace PathtoDarkSide.Content.Enemies.AI
             }
         }
 
-        public virtual void Update(int speed, BulletField field, ref Vector2 position)
+        public virtual void Update(int speed, Rect2 margin, Player player, ref Vector2 position)
         {
             position.X -= 3 + (speed*0.25f);
         }

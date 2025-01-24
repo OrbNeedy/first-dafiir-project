@@ -25,14 +25,14 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters
             if (timer > 0) timer--;
         }
 
-        public bool Shoot(BulletField bulletField, int difficulty, int speed, params float[] parameters)
+        public bool Shoot(Rect2 margin, Player player, int difficulty, int speed, params float[] parameters)
         {
             if (timer <= 0)
             {
-                bool returnValue = pattern.CanShoot(position, bulletField);
+                bool returnValue = pattern.CanShoot(position, margin, player);
                 if (returnValue)
                 {
-                    pattern.Shoot(bulletField, position, cycle, maxCycle, target, difficulty, speed, parameters);
+                    pattern.Shoot(margin, player, position, cycle, maxCycle, target, difficulty, speed, parameters);
                     timer = maxTimer;
                     cycle++;
                     if (cycle >= maxCycle) cycle = 0;

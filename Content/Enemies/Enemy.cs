@@ -30,6 +30,7 @@ namespace PathtoDarkSide.Content.Enemies
         private int frameCounter = 0;
 
         public float lifePoints;
+        public bool dead = false;
         private Emitter[] emitters;
         private BulletField field;
         private Move movement;
@@ -53,13 +54,13 @@ namespace PathtoDarkSide.Content.Enemies
         {
             frameCounter++;
 
-            movement.Update(1, field, ref position);
-            attack.Update(1, 1, field, this, ref emitters);
+            movement.Update(1, field.Margin, field.Player, ref position);
+            attack.Update(1, 1, field.Margin, field.Player, this, ref emitters);
 
             foreach (var emitter in emitters)
             {
                 emitter.Update();
-                emitter.Shoot(field, 1, 1);
+                emitter.Shoot(field.Margin, field.Player, 1, 1);
             }
 
             hitbox = new Aabb(new Vector3(position.X-25, position.Y-25, 0), new Vector3(50, 50, 1));
@@ -74,17 +75,18 @@ namespace PathtoDarkSide.Content.Enemies
                 }
             }
 
-            if (movement.DeathCondition(position, field))
+            if (movement.DeathCondition(position, field) && !dead)
             {
                 lifePoints = 0;
+                dead = true;
                 OnDeath(new EnemyDeathEventArgs(0));
             }
         }
 
         public void OnHit(float damage)
         {
-            // The enemy can only take damage if it's inside the boundaries of the bullet field plus 20 pixels,
-            // but a sound should still play if it's hit
+            // The enemy can only take damage and die of it if it's inside the boundaries of the bullet field plus
+            // 20 pixels, but a sound should still play if it's hit
             if (position.X < field.Margin.Position.X - 20 ||
                 position.X > field.Margin.Size.X + field.Margin.Position.X + 20 ||
                 position.Y < field.Margin.Position.Y - 20 ||
@@ -92,7 +94,8 @@ namespace PathtoDarkSide.Content.Enemies
             lifePoints -= damage;
             if (lifePoints <= 0)
             {
-                OnDeath(new EnemyDeathEventArgs(10));
+                dead = true;
+                OnDeath(new EnemyDeathEventArgs(10, true));
             }
         }
 

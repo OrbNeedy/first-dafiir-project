@@ -53,7 +53,67 @@ public enum EffectAttributes
     Param2,
 }
 
-namespace PathtoDarkSide.Content {
+namespace PathtoDarkSide.Content
+{
+    public class BulletSpawnEventArgs : EventArgs
+    {
+        /*Vector2 position, Vector2 direction, float rotation, float speed, float shape = 0,
+            float sizeX = 10, float sizeY = 10, float script = 0, float drawScript = 0, 
+            float hitLayer = (int)HitLayers.Player, float damage = 1, float ai1 = 0, float ai2 = 0, float ai3 = 0, 
+            float ai4 = 0, float visualParam1 = 0, float visualParam2 = 0, float r = 1, float g = 1, float b = 1, 
+            float a = 1*/
+        public Vector2 position;
+        public Vector2 direction;
+        public float rotation;
+        public float speed;
+        public float shape;
+        public float sizeX;
+        public float sizeY;
+        public float script;
+        public float drawScript;
+        public float hitLayer;
+        public float damage;
+        public float ai1;
+        public float ai2;
+        public float ai3;
+        public float ai4;
+        public float visualParam1;
+        public float visualParam2;
+        public float r;
+        public float g;
+        public float b;
+        public float a;
+
+        public BulletSpawnEventArgs(Vector2 position, Vector2 direction, float rotation, float speed, 
+            float shape = 0, float sizeX = 10, float sizeY = 10, float script = 0, float drawScript = 0,
+            float hitLayer = (int)HitLayers.Player, float damage = 1, float ai1 = 0, float ai2 = 0, float ai3 = 0,
+            float ai4 = 0, float visualParam1 = 0, float visualParam2 = 0, float r = 1, float g = 1, float b = 1,
+            float a = 1)
+        {
+            this.position = position;
+            this.direction = direction;
+            this.rotation = rotation;
+            this.speed = speed;
+            this.shape = shape;
+            this.sizeX = sizeX;
+            this.sizeY = sizeY;
+            this.script = script;
+            this.drawScript = drawScript;
+            this.hitLayer = hitLayer;
+            this.damage = damage;
+            this.ai1 = ai1;
+            this.ai2 = ai2;
+            this.ai3 = ai3;
+            this.ai4 = ai4;
+            this.visualParam1 = visualParam1;
+            this.visualParam2 = visualParam2;
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+        }
+    }
+
     public class BulletField
     {
         Predicate<float[]> deleteConditions;
@@ -65,7 +125,7 @@ namespace PathtoDarkSide.Content {
 
         public List<Enemy> ActiveEnemies = new List<Enemy>();
         public Player Player;
-        public bool paused;
+        public bool paused = false;
         public bool stoppedTime = false;
         public bool hidePlayer = false;
 
@@ -74,7 +134,7 @@ namespace PathtoDarkSide.Content {
             deleteConditions = DeleteConditions;
             Margin = margin;
             this.main = main;
-            Player = new Player(this);
+            Player = new Player(this); 
         }
 
         public void Update(double delta)
@@ -89,22 +149,21 @@ namespace PathtoDarkSide.Content {
 
                 if (!stoppedTime && !paused)
                 {
+                    if ((int)bullet[(int)BulletAttributes.AI] < 0 ||
+                    (int)bullet[(int)BulletAttributes.AI] >= BulletAIs.Length)
+                    {
+                        bullet[(int)BulletAttributes.AI] = 0;
+                    }
+                    BulletAIs[(int)bullet[(int)BulletAttributes.AI]].UpdateBullet(ref bullet[(int)BulletAttributes.CenterX],
+                        ref bullet[(int)BulletAttributes.CenterY], ref bullet[(int)BulletAttributes.DirectionX],
+                        ref bullet[(int)BulletAttributes.DirectionY], ref bullet[(int)BulletAttributes.Rotation],
+                        ref bullet[(int)BulletAttributes.Speed], ref bullet[(int)BulletAttributes.Shape],
+                        ref bullet[(int)BulletAttributes.SizeX], ref bullet[(int)BulletAttributes.SizeY],
+                        ref bullet[(int)BulletAttributes.Time], ref bullet[(int)BulletAttributes.DrawAI],
+                        ref bullet[(int)BulletAttributes.HitLayer], ref bullet[(int)BulletAttributes.Damage],
+                        ref bullet[(int)BulletAttributes.Param1], ref bullet[(int)BulletAttributes.Param2],
+                        ref bullet[(int)BulletAttributes.Param3], ref bullet[(int)BulletAttributes.Param4], this);
                 }
-
-                if ((int)bullet[(int)BulletAttributes.AI] < 0 ||
-                (int)bullet[(int)BulletAttributes.AI] >= BulletAIs.Length)
-                {
-                    bullet[(int)BulletAttributes.AI] = 0;
-                }
-                BulletAIs[(int)bullet[(int)BulletAttributes.AI]].UpdateBullet(ref bullet[(int)BulletAttributes.CenterX],
-                    ref bullet[(int)BulletAttributes.CenterY], ref bullet[(int)BulletAttributes.DirectionX],
-                    ref bullet[(int)BulletAttributes.DirectionY], ref bullet[(int)BulletAttributes.Rotation],
-                    ref bullet[(int)BulletAttributes.Speed], ref bullet[(int)BulletAttributes.Shape],
-                    ref bullet[(int)BulletAttributes.SizeX], ref bullet[(int)BulletAttributes.SizeY],
-                    ref bullet[(int)BulletAttributes.Time], ref bullet[(int)BulletAttributes.DrawAI],
-                    ref bullet[(int)BulletAttributes.HitLayer], ref bullet[(int)BulletAttributes.Damage],
-                    ref bullet[(int)BulletAttributes.Param1], ref bullet[(int)BulletAttributes.Param2],
-                    ref bullet[(int)BulletAttributes.Param3], ref bullet[(int)BulletAttributes.Param4], this);
 
                 // Postdraw bullet
                 DrawingAIs[(int)bullet[(int)BulletAttributes.DrawAI]].Postdraw(bullet[(int)BulletAttributes.CenterX],
@@ -122,18 +181,18 @@ namespace PathtoDarkSide.Content {
             {
                 if ((!stoppedTime && !enemy.imuneToStopTime) && !paused)
                 {
+                    enemy.Update();
                 }
-                enemy.Update();
                 enemy.Draw();
             }
 
-            ActiveEnemies.RemoveAll((x) => x.lifePoints <= 0);
+            ActiveEnemies.RemoveAll((x) => x.dead);
 
             Player.HandleInputs();
             if (!stoppedTime && !paused)
             {
+                Player.Update(delta, Margin);
             }
-            Player.Update(delta, Margin);
             Player.Draw();
 
             if (Main.randomNumberGenerator.RandiRange(0, 100) < 2)
@@ -142,10 +201,11 @@ namespace PathtoDarkSide.Content {
             }
         }
 
-        public void RegisterEnemyHitbox(out int? index)
+        public void HandleBulletSpawn(object sender, BulletSpawnEventArgs e)
         {
-            index = null;
-
+            AddProjectile(e.position, e.direction, e.rotation, e.speed, e.shape, e.sizeX, e.sizeY, e.script, 
+                e.drawScript, e.hitLayer, e.damage, e.ai1, e.ai2, e.ai3, e.ai4, e.visualParam1, e.visualParam2, 
+                e.r, e.g, e.b, e.a);
         }
 
         public void AddProjectile(Vector2 position, Vector2 direction, float rotation, float speed, float shape = 0,
@@ -242,6 +302,9 @@ namespace PathtoDarkSide.Content {
             if (e.notify)
             {
                 GD.Print($"An enemy died and dropped {e.points}");
+            } else
+            {
+                GD.Print("An enemy died, but don't tell anyone");
             }
         }
 
