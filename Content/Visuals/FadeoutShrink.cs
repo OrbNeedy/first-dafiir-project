@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PathtoDarkSide.Content.Visuals
 {
-    public class Trail : VFX
+    public class FadeoutShrink : VFX
     {
         public override void Update(ref float texture, ref float positionX, ref float positionY,
             ref float rotation, ref float scaleX, ref float scaleY, ref float r, ref float g, ref float b,

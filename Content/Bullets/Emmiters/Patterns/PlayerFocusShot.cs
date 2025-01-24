@@ -7,7 +7,7 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
     {
         private float rotation = 0;
 
-        public override void Shoot(BulletField field, Vector2 position, int cycle, int maxCycle, Vector2 target, 
+        public override bool Shoot(BulletField field, Vector2 position, int cycle, int maxCycle, Vector2 target, 
             int dificulty, int speed, params float[] parameters)
         {
             for (int i = 0; i < 3; i++)
@@ -19,6 +19,12 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
                      b: 0.865f, a: 0.35f, ai1: 0.2f, damage: 1);
             }
             rotation += 0.01f;
+            return true;
+        }
+
+        public override bool CanShoot(Vector2 position, BulletField field)
+        {
+            return true;
         }
     }
 }

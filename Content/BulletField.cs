@@ -1,5 +1,7 @@
 using Godot;
 using PathtoDarkSide.Content.Bullets.Emmiters;
+using PathtoDarkSide.Content.Enemies.AI;
+using PathtoDarkSide.Content.Enemies.OffensiveAI;
 using PathtoDarkSide.Content.Utils;
 using static PathtoDarkSide.Content.Utils.VisualTables;
 using System;
@@ -52,17 +54,9 @@ public enum EffectAttributes
 }
 
 namespace PathtoDarkSide.Content {
-    /*public class CollisionEventArgs : EventArgs
-    {
-        public int index;
-        public int collisionType;
-        public float strength;
-    }*/
-
     public class BulletField
     {
         Predicate<float[]> deleteConditions;
-        //public event EventHandler<CollisionEventArgs> Collision;
 
         public Rect2 Margin;
         public Main main;
@@ -70,11 +64,17 @@ namespace PathtoDarkSide.Content {
         public List<float[]> ActiveBullets = new List<float[]>();
 
         public List<Enemy> ActiveEnemies = new List<Enemy>();
-        
-        public BulletField(Rect2 margin) 
+        public Player Player;
+        public bool paused;
+        public bool stoppedTime = false;
+        public bool hidePlayer = false;
+
+        public BulletField(Rect2 margin, Main main) 
         {
             deleteConditions = DeleteConditions;
-            this.Margin = margin;
+            Margin = margin;
+            this.main = main;
+            Player = new Player(this);
         }
 
         public void Update(double delta)
@@ -87,8 +87,12 @@ namespace PathtoDarkSide.Content {
                     bullet[(int)BulletAttributes.DrawAI] = 0;
                 }
 
+                if (!stoppedTime && !paused)
+                {
+                }
+
                 if ((int)bullet[(int)BulletAttributes.AI] < 0 ||
-                    (int)bullet[(int)BulletAttributes.AI] >= BulletAIs.Length)
+                (int)bullet[(int)BulletAttributes.AI] >= BulletAIs.Length)
                 {
                     bullet[(int)BulletAttributes.AI] = 0;
                 }
@@ -113,6 +117,29 @@ namespace PathtoDarkSide.Content {
             }
 
             ActiveBullets.RemoveAll(deleteConditions);
+
+            foreach (Enemy enemy in ActiveEnemies)
+            {
+                if ((!stoppedTime && !enemy.imuneToStopTime) && !paused)
+                {
+                }
+                enemy.Update();
+                enemy.Draw();
+            }
+
+            ActiveEnemies.RemoveAll((x) => x.lifePoints <= 0);
+
+            Player.HandleInputs();
+            if (!stoppedTime && !paused)
+            {
+            }
+            Player.Update(delta, Margin);
+            Player.Draw();
+
+            if (Main.randomNumberGenerator.RandiRange(0, 100) < 2)
+            {
+                AddEnemy(Textures.Pixie, 60, new Move(-1), new Attack(0));
+            }
         }
 
         public void RegisterEnemyHitbox(out int? index)
@@ -136,6 +163,13 @@ namespace PathtoDarkSide.Content {
             ActiveBullets.Add(bullet);
         }
 
+        public void AddEnemy(Textures texture, float life, Move move, Attack pattern)
+        {
+            Enemy instance = new Enemy((int)texture, life, this, move, pattern);
+            instance.Death += HandleEnemyDeath;
+            ActiveEnemies.Add(instance);
+        }
+
         private bool Collide(float[] bullet, Aabb target)
         {
             Aabb bulletAabb = new Aabb(bullet[(int)BulletAttributes.CenterX] - 
@@ -147,6 +181,17 @@ namespace PathtoDarkSide.Content {
                 switch (bullet[(int)BulletAttributes.Shape])
                 {
                     case 0:
+                        BulletAIs[(int)bullet[(int)BulletAttributes.AI]].OnDeath(
+                            ref bullet[(int)BulletAttributes.CenterX], ref bullet[(int)BulletAttributes.CenterY], 
+                            ref bullet[(int)BulletAttributes.DirectionX], 
+                            ref bullet[(int)BulletAttributes.DirectionY], ref bullet[(int)BulletAttributes.Rotation],
+                            ref bullet[(int)BulletAttributes.Speed], ref bullet[(int)BulletAttributes.Shape],
+                            ref bullet[(int)BulletAttributes.SizeX], ref bullet[(int)BulletAttributes.SizeY],
+                            ref bullet[(int)BulletAttributes.Time], ref bullet[(int)BulletAttributes.DrawAI],
+                            ref bullet[(int)BulletAttributes.HitLayer], ref bullet[(int)BulletAttributes.Damage],
+                            ref bullet[(int)BulletAttributes.Param1], ref bullet[(int)BulletAttributes.Param2],
+                            ref bullet[(int)BulletAttributes.Param3], ref bullet[(int)BulletAttributes.Param4], 
+                            this);
                         return true;
                     case 1:
                         Vector2 targetCenter = new Vector2(target.Position.X + (target.Size.X / 2), 
@@ -172,14 +217,14 @@ namespace PathtoDarkSide.Content {
             switch (bullet[(int)BulletAttributes.HitLayer])
             {
                 case (int)HitLayers.Player:
-                    if (Collide(bullet, main.player.hitbox))
+                    if (Collide(bullet, Player.hitbox))
                     {
-                        main.player.OnHit(bullet[(int)BulletAttributes.Damage]);
+                        Player.OnHit(bullet[(int)BulletAttributes.Damage]);
                         return true;
                     }
                     return false;
                 case (int)HitLayers.Enemy:
-                    foreach (Enemy enemy in main.enemies)
+                    foreach (Enemy enemy in ActiveEnemies)
                     {
                         if (Collide(bullet, enemy.hitbox))
                         {
@@ -192,10 +237,13 @@ namespace PathtoDarkSide.Content {
             return false;
         }
 
-        /*private void OnCollide(CollisionEventArgs e)
+        public void HandleEnemyDeath(object sender, EnemyDeathEventArgs e)
         {
-            Collision?.Invoke(this, e);
-        }*/
+            if (e.notify)
+            {
+                GD.Print($"An enemy died and dropped {e.points}");
+            }
+        }
 
         public bool CheckOutOfBounds(float[] bullet)
         {

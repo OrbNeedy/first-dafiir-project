@@ -15,7 +15,7 @@ namespace PathtoDarkSide.Content.Utils
     public enum Effects
     {
         None,
-        Trail
+        FadeoutShrink
     }
 
     public enum Textures
@@ -31,5 +31,15 @@ namespace PathtoDarkSide.Content.Utils
     {
         Player,
         Enemy
+    }
+
+    public enum MoveAIs
+    {
+        Base
+    }
+
+    public enum PatternAIs
+    {
+        Circle
     }
 }

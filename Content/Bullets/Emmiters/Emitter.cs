@@ -5,7 +5,7 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters
 {
     public class Emitter
     {
-        public Vector2 position;
+        public Vector2 position = new Vector2();
         public Vector2 target;
         public int timer = 0;
         public int maxTimer = 60;
@@ -13,9 +13,8 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters
         public int maxCycle = 2;
         public Pattern pattern;
 
-        public Emitter(Vector2 position, Pattern pattern, int maxTimer, int maxCycle) 
+        public Emitter(Pattern pattern, int maxTimer, int maxCycle) 
         { 
-            this.position = position;
             this.pattern = pattern;
             this.maxTimer = maxTimer;
             this.maxCycle = maxCycle;
@@ -30,11 +29,15 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters
         {
             if (timer <= 0)
             {
-                pattern.Shoot(bulletField, position, cycle, maxCycle, target, difficulty, speed, parameters);
-                timer = maxTimer;
-                cycle++;
-                if (cycle >= maxCycle) cycle = 0;
-                return true;
+                bool returnValue = pattern.CanShoot(position, bulletField);
+                if (returnValue)
+                {
+                    pattern.Shoot(bulletField, position, cycle, maxCycle, target, difficulty, speed, parameters);
+                    timer = maxTimer;
+                    cycle++;
+                    if (cycle >= maxCycle) cycle = 0;
+                }
+                return returnValue;
             }
             return false;
         }

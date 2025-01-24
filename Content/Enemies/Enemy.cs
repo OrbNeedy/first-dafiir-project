@@ -1,5 +1,7 @@
 ﻿using Godot;
 using PathtoDarkSide.Content.Bullets.Emmiters;
+using PathtoDarkSide.Content.Enemies.AI;
+using PathtoDarkSide.Content.Enemies.OffensiveAI;
 using PathtoDarkSide.Content.Utils;
 using System;
 
@@ -8,10 +10,12 @@ namespace PathtoDarkSide.Content.Enemies
     public class EnemyDeathEventArgs : EventArgs
     {
         public int points;
+        public bool notify;
 
-        public EnemyDeathEventArgs(int points)
+        public EnemyDeathEventArgs(int points, bool notify = false)
         {
             this.points = points;
+            this.notify = notify;
         }
     }
 
@@ -19,6 +23,7 @@ namespace PathtoDarkSide.Content.Enemies
     {
         public Vector2 position;
         public Aabb hitbox;
+        public bool imuneToStopTime;
 
         private int texture2DIndex;
         private int frame = 0;
@@ -27,22 +32,30 @@ namespace PathtoDarkSide.Content.Enemies
         public float lifePoints;
         private Emitter[] emitters;
         private BulletField field;
+        private Move movement;
+        private Attack attack;
 
         public event EventHandler<EnemyDeathEventArgs> Death;
 
-        public Enemy(Vector2 position, int texture, float life, Emitter[] emitters, BulletField field)
+        public Enemy(int texture, float life, BulletField field, Move movement, Attack attack)
         {
-            this.position = position;
             texture2DIndex = texture;
             lifePoints = life;
-            this.emitters = emitters;
             this.field = field;
             hitbox = new Aabb(new Vector3(position.X-25, position.Y-25, 0), new Vector3(50, 50, 1));
+            this.movement = movement;
+            movement.Initialize(1, field, ref position);
+            this.attack = attack;
+            attack.Initialize(1, 1, field, ref emitters);
         }
 
         public void Update()
         {
             frameCounter++;
+
+            movement.Update(1, field, ref position);
+            attack.Update(1, 1, field, this, ref emitters);
+
             foreach (var emitter in emitters)
             {
                 emitter.Update();
@@ -60,10 +73,22 @@ namespace PathtoDarkSide.Content.Enemies
                     frame = 0;
                 }
             }
+
+            if (movement.DeathCondition(position, field))
+            {
+                lifePoints = 0;
+                OnDeath(new EnemyDeathEventArgs(0));
+            }
         }
 
         public void OnHit(float damage)
         {
+            // The enemy can only take damage if it's inside the boundaries of the bullet field plus 20 pixels,
+            // but a sound should still play if it's hit
+            if (position.X < field.Margin.Position.X - 20 ||
+                position.X > field.Margin.Size.X + field.Margin.Position.X + 20 ||
+                position.Y < field.Margin.Position.Y - 20 ||
+                position.Y > field.Margin.Size.Y + field.Margin.Position.Y + 20) return;
             lifePoints -= damage;
             if (lifePoints <= 0)
             {

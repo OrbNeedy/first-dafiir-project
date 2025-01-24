@@ -28,9 +28,6 @@ namespace PathtoDarkSide.Content.Utils
                 AtlasTexture texture = new AtlasTexture();
                 texture.Atlas = (Texture2D)GD.Load("res://Assets/Enemies/LunarPixie.png");
                 texture.Region = new Rect2(38 * i, 0, 38, 32);
-                //texture.Margin = new Rect2(38 * i, 0, 38, 32);
-                GD.Print($"At iteration {i}, added a margin like {texture.Margin}");
-                GD.Print($"And a region like {texture.Region}");
                 enemy1[i] = texture;
             }
             LoadedTextures[(int)Textures.Pixie] = enemy1;

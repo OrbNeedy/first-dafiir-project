@@ -21,10 +21,9 @@ namespace PathtoDarkSide.Content
 
         public Player(BulletField field)
         {
-            emitters = new Emitter[] { new Emitter(position, new PlayerFocusShot(), 5, 1) };
+            emitters = new Emitter[] { new Emitter(new PlayerFocusShot(), 5, 1) };
             this.field = field;
             hitbox = new Aabb(new Vector3(position.X-10, position.Y-10, 0), new Vector3(20, 20, 1));
-            //field.PlayerHit += HandleOnHit;
         }
 
         public void HandleInputs()
@@ -95,7 +94,7 @@ namespace PathtoDarkSide.Content
             shooting = finalShoot;
 
             // Subtract half of the hitbox's size to it's position so it will be in the middle
-            hitbox = new Aabb(new Vector3(position.X - 10, position.Y - 10, 0), new Vector3(20, 20, 1));
+            hitbox = new Aabb(new Vector3(position.X - 5, position.Y - 5, 0), new Vector3(10, 10, 1));
 
             velocity.X = 0;
             velocity.Y = 0;
@@ -108,11 +107,6 @@ namespace PathtoDarkSide.Content
         {
             iFrames = 60;
         }
-
-        /*public void HandleOnHit(object sender, PlayerHitEventArgs e)
-        {
-            iFrames = 60;
-        }*/
 
         public void Draw()
         {
