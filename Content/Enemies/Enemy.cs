@@ -3,6 +3,7 @@ using PathtoDarkSide.Content.Bullets.Emmiters;
 using PathtoDarkSide.Content.Enemies.AI;
 using PathtoDarkSide.Content.Enemies.OffensiveAI;
 using PathtoDarkSide.Content.Utils;
+
 using System;
 
 namespace PathtoDarkSide.Content.Enemies
@@ -22,7 +23,11 @@ namespace PathtoDarkSide.Content.Enemies
     public class Enemy
     {
         public Vector2 position;
-        public Aabb hitbox;
+        public Aabb hitbox; // The collider for this enemy vs bullets
+        public Vector2 hitboxSize;
+        public int shape; // Only the hitbox has a shape, the hurtbox is always a square
+        public Aabb hurtbox; // The collider for this enemy vs the player
+        public Vector2 hurtboxSize;
         public bool imuneToStopTime;
 
         private int texture2DIndex;
@@ -31,23 +36,30 @@ namespace PathtoDarkSide.Content.Enemies
 
         public float lifePoints;
         public bool dead = false;
+        public int iFrames = 0;
+
         private Emitter[] emitters;
         private BulletField field;
+        public float damageValue;
         private Move movement;
         private Attack attack;
 
         public event EventHandler<EnemyDeathEventArgs> Death;
 
-        public Enemy(int texture, float life, BulletField field, Move movement, Attack attack)
+        public Enemy(int texture, float life, BulletField field, Move movement, Attack attack, int hitboxShape, 
+            Vector2 hitboxSize, Vector2 hurtboxSize)
         {
             texture2DIndex = texture;
             lifePoints = life;
             this.field = field;
-            hitbox = new Aabb(new Vector3(position.X-25, position.Y-25, 0), new Vector3(50, 50, 1));
+            hitbox = new Aabb(new Vector3(position.X - 25, position.Y - 25, 0), new Vector3(50, 50, 1));
             this.movement = movement;
             movement.Initialize(1, field, ref position);
             this.attack = attack;
             attack.Initialize(1, 1, field, ref emitters);
+            this.shape = hitboxShape;
+            this.hitboxSize = hitboxSize;
+            this.hurtboxSize = hurtboxSize;
         }
 
         public void Update()
@@ -60,10 +72,18 @@ namespace PathtoDarkSide.Content.Enemies
             foreach (var emitter in emitters)
             {
                 emitter.Update();
-                emitter.Shoot(field.Margin, field.Player, 1, 1);
+                emitter.Shoot(field.Margin, field.Player, 1, 1, damageValue);
             }
 
-            hitbox = new Aabb(new Vector3(position.X-25, position.Y-25, 0), new Vector3(50, 50, 1));
+            hitbox = new Aabb(new Vector3(position.X - (hitboxSize.X / 2), position.Y - (hitboxSize.Y / 2), 0), 
+                new Vector3(hitboxSize.X, hitboxSize.Y, 1));
+            hurtbox = new Aabb(new Vector3(position.X - (hurtboxSize.X / 2), position.Y - (hurtboxSize.Y / 2), 0),
+                new Vector3(hurtboxSize.X, hurtboxSize.Y, 1));
+
+            if (iFrames > 0)
+            {
+                iFrames--;
+            }
 
             if (frameCounter > 20)
             {
@@ -83,19 +103,21 @@ namespace PathtoDarkSide.Content.Enemies
             }
         }
 
-        public void OnHit(float damage)
+        public void OnHit(float damage, bool giveIframes = false)
         {
             // The enemy can only take damage and die of it if it's inside the boundaries of the bullet field plus
             // 20 pixels, but a sound should still play if it's hit
             if (position.X < field.Margin.Position.X - 20 ||
                 position.X > field.Margin.Size.X + field.Margin.Position.X + 20 ||
                 position.Y < field.Margin.Position.Y - 20 ||
-                position.Y > field.Margin.Size.Y + field.Margin.Position.Y + 20) return;
+                position.Y > field.Margin.Size.Y + field.Margin.Position.Y + 20 ||
+                iFrames > 0) return;
             lifePoints -= damage;
+            if (giveIframes) iFrames = 7;
             if (lifePoints <= 0)
             {
                 dead = true;
-                OnDeath(new EnemyDeathEventArgs(10, true));
+                OnDeath(new EnemyDeathEventArgs(10));
             }
         }
 
@@ -107,6 +129,36 @@ namespace PathtoDarkSide.Content.Enemies
         public void Draw()
         {
             DrawEngine.AddDraw(texture2DIndex, position.X, position.Y, 0, frame: frame);
+        }
+
+        public bool Collided(float[] bullet)
+        {
+            // Special Line collision if statement
+            if (bullet[(int)BulletAttributes.Shape] == (int)Shapes.Line)
+            {
+                return Collision.AabbvLine(hitbox, 
+                    new Vector2(bullet[(int)BulletAttributes.CenterX], bullet[(int)BulletAttributes.CenterY]),
+                    new Vector2(bullet[(int)BulletAttributes.SizeX], bullet[(int)BulletAttributes.SizeY]),
+                    bullet[(int)BulletAttributes.Width]);
+            }
+
+            bool aabbvAabbCheck = Collision.AabbvAabb(hitbox, new Aabb(bullet[(int)BulletAttributes.CenterX] -
+                (bullet[(int)BulletAttributes.SizeX] / 2), bullet[(int)BulletAttributes.CenterY] -
+                (bullet[(int)BulletAttributes.SizeY] / 2), 0,
+                bullet[(int)BulletAttributes.SizeX], bullet[(int)BulletAttributes.SizeY], 1));
+            if (aabbvAabbCheck)
+            {
+                switch (bullet[(int)BulletAttributes.Shape])
+                {
+                    case (int)Shapes.Rectangle:
+                        return true;
+                    case (int)Shapes.Circle:
+                        return Collision.AabbvCircle(hitbox,
+                            new Vector2(bullet[(int)BulletAttributes.CenterX], bullet[(int)BulletAttributes.CenterY]),
+                            bullet[(int)BulletAttributes.Width]);
+                }
+            }
+            return false;
         }
     }
 }

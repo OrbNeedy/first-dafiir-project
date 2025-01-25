@@ -1,5 +1,6 @@
 ﻿using Godot;
 using PathtoDarkSide.Content.Bullets.Emmiters.Patterns;
+using PathtoDarkSide.Content.Enemies;
 
 namespace PathtoDarkSide.Content.Bullets.Emmiters
 {

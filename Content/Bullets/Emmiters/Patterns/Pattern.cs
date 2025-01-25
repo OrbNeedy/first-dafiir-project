@@ -1,4 +1,5 @@
 ﻿using Godot;
+using PathtoDarkSide.Content.Enemies;
 using PathtoDarkSide.Content.Utils;
 using System;
 
@@ -25,7 +26,7 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
             for (int i = 0; i < bullets; i++)
             {
                 SpawnBullet(this, new BulletSpawnEventArgs(position, direction, 0, 1 + (speed), 
-                    visualParam1: (int)Textures.Inner, sizeX: 15, sizeY: 15));
+                    visualParam1: (int)Textures.Inner, sizeX: 20, sizeY: 20));
                 direction = direction.Rotated(MathConsts.TwoPi / bullets);
             }
             return true;

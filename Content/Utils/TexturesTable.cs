@@ -1,9 +1,5 @@
 ﻿using Godot;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PathtoDarkSide.Content.Utils
 {
@@ -15,6 +11,7 @@ namespace PathtoDarkSide.Content.Utils
         public static Dictionary<int, Texture2D[]> LoadedTextures = new Dictionary<int, Texture2D[]>
         {
             [(int)Textures.Player] = new[] { (Texture2D)GD.Load("res://Assets/Player/TestShipHorizontal.png") },
+            [(int)Textures.Hitbox] = new[] { (Texture2D)GD.Load("res://Assets/Player/Hitbox.png") },
             [(int)Textures.Outer] = new[] { (Texture2D)GD.Load("res://Assets/Bullets/OuterBullet.png") },
             [(int)Textures.Inner] = new[] { (Texture2D)GD.Load("res://Assets/Bullets/InnerBullet.png") },
             [(int)Textures.Star] = new[] { (Texture2D)GD.Load("res://Assets/Bullets/Star.png") } 

@@ -19,6 +19,7 @@ public enum BulletAttributes
     Shape, 
     SizeX, 
     SizeY,
+    Width,
     Time, 
     AI, 
     DrawAI, 
@@ -57,11 +58,6 @@ namespace PathtoDarkSide.Content
 {
     public class BulletSpawnEventArgs : EventArgs
     {
-        /*Vector2 position, Vector2 direction, float rotation, float speed, float shape = 0,
-            float sizeX = 10, float sizeY = 10, float script = 0, float drawScript = 0, 
-            float hitLayer = (int)HitLayers.Player, float damage = 1, float ai1 = 0, float ai2 = 0, float ai3 = 0, 
-            float ai4 = 0, float visualParam1 = 0, float visualParam2 = 0, float r = 1, float g = 1, float b = 1, 
-            float a = 1*/
         public Vector2 position;
         public Vector2 direction;
         public float rotation;
@@ -69,6 +65,7 @@ namespace PathtoDarkSide.Content
         public float shape;
         public float sizeX;
         public float sizeY;
+        public float width;
         public float script;
         public float drawScript;
         public float hitLayer;
@@ -85,10 +82,10 @@ namespace PathtoDarkSide.Content
         public float a;
 
         public BulletSpawnEventArgs(Vector2 position, Vector2 direction, float rotation, float speed, 
-            float shape = 0, float sizeX = 10, float sizeY = 10, float script = 0, float drawScript = 0,
-            float hitLayer = (int)HitLayers.Player, float damage = 1, float ai1 = 0, float ai2 = 0, float ai3 = 0,
-            float ai4 = 0, float visualParam1 = 0, float visualParam2 = 0, float r = 1, float g = 1, float b = 1,
-            float a = 1)
+            float shape = 0, float sizeX = 10, float sizeY = 10, float width = 1, float script = 0, 
+            float drawScript = 0, float hitLayer = (int)HitLayers.Player, float damage = 1, float ai1 = 0, 
+            float ai2 = 0, float ai3 = 0, float ai4 = 0, float visualParam1 = 0, float visualParam2 = 0, 
+            float r = 1, float g = 1, float b = 1, float a = 1)
         {
             this.position = position;
             this.direction = direction;
@@ -97,6 +94,7 @@ namespace PathtoDarkSide.Content
             this.shape = shape;
             this.sizeX = sizeX;
             this.sizeY = sizeY;
+            this.width = width;
             this.script = script;
             this.drawScript = drawScript;
             this.hitLayer = hitLayer;
@@ -116,8 +114,6 @@ namespace PathtoDarkSide.Content
 
     public class BulletField
     {
-        Predicate<float[]> deleteConditions;
-
         public Rect2 Margin;
         public Main main;
         public static Bullet[] BulletAIs = new Bullet[] { new Bullet() };
@@ -131,7 +127,6 @@ namespace PathtoDarkSide.Content
 
         public BulletField(Rect2 margin, Main main) 
         {
-            deleteConditions = DeleteConditions;
             Margin = margin;
             this.main = main;
             Player = new Player(this); 
@@ -175,13 +170,20 @@ namespace PathtoDarkSide.Content
                 bullet[(int)BulletAttributes.Time] += 1;
             }
 
-            ActiveBullets.RemoveAll(deleteConditions);
+            ActiveBullets.RemoveAll(DeleteConditions);
 
             foreach (Enemy enemy in ActiveEnemies)
             {
                 if ((!stoppedTime && !enemy.imuneToStopTime) && !paused)
                 {
                     enemy.Update();
+                    if (Player.iFrames <= 0)
+                    {
+                        if (Player.Collided(enemy))
+                        {
+                            Player.OnHit(enemy.damageValue);
+                        }
+                    }
                 }
                 enemy.Draw();
             }
@@ -197,19 +199,19 @@ namespace PathtoDarkSide.Content
 
             if (Main.randomNumberGenerator.RandiRange(0, 100) < 2)
             {
-                AddEnemy(Textures.Pixie, 60, new Move(-1), new Attack(0));
+                AddEnemy(Textures.Pixie, 50, new Move(-1), new Attack(0));
             }
         }
 
         public void HandleBulletSpawn(object sender, BulletSpawnEventArgs e)
         {
-            AddProjectile(e.position, e.direction, e.rotation, e.speed, e.shape, e.sizeX, e.sizeY, e.script, 
-                e.drawScript, e.hitLayer, e.damage, e.ai1, e.ai2, e.ai3, e.ai4, e.visualParam1, e.visualParam2, 
-                e.r, e.g, e.b, e.a);
+            AddProjectile(e.position, e.direction, e.rotation, e.speed, e.shape, e.sizeX, e.sizeY, e.width, 
+                e.script, e.drawScript, e.hitLayer, e.damage, e.ai1, e.ai2, e.ai3, e.ai4, e.visualParam1, 
+                e.visualParam2, e.r, e.g, e.b, e.a);
         }
 
         public void AddProjectile(Vector2 position, Vector2 direction, float rotation, float speed, float shape = 0,
-            float sizeX = 10, float sizeY = 10, float script = 0, float drawScript = 0, 
+            float sizeX = 10, float sizeY = 10, float width = 1, float script = 0, float drawScript = 0, 
             float hitLayer = (int)HitLayers.Player, float damage = 1, float ai1 = 0, float ai2 = 0, float ai3 = 0, 
             float ai4 = 0, float visualParam1 = 0, float visualParam2 = 0, float r = 1, float g = 1, float b = 1, 
             float a = 1)
@@ -217,53 +219,26 @@ namespace PathtoDarkSide.Content
             direction = direction.Normalized();
 
             float[] bullet = new float[] { position.X, position.Y, direction.X, direction.Y, rotation, speed, shape,
-            sizeX, sizeY, 0, script, drawScript, hitLayer, damage, ai1, ai2, ai3, ai4, visualParam1, visualParam2, r, 
-            g, b, a };
+                sizeX, sizeY, width, 0, script, drawScript, hitLayer, damage, ai1, ai2, ai3, ai4, visualParam1, 
+                visualParam2, r, g, b, a };
 
             ActiveBullets.Add(bullet);
         }
 
-        public void AddEnemy(Textures texture, float life, Move move, Attack pattern)
+        public void AddEnemy(Textures texture, float life, Move move, Attack pattern, Vector2 hitboxSize, 
+            Vector2 hurtboxSize, int shape = (int)Shapes.Circle)
         {
-            Enemy instance = new Enemy((int)texture, life, this, move, pattern);
+            Enemy instance = new Enemy((int)texture, life, this, move, pattern, shape, hitboxSize, hurtboxSize);
             instance.Death += HandleEnemyDeath;
             ActiveEnemies.Add(instance);
         }
 
-        private bool Collide(float[] bullet, Aabb target)
+        public void AddEnemy(Textures texture, float life, Move move, Attack pattern)
         {
-            Aabb bulletAabb = new Aabb(bullet[(int)BulletAttributes.CenterX] - 
-                (bullet[(int)BulletAttributes.SizeX] / 2), bullet[(int)BulletAttributes.CenterY] - 
-                (bullet[(int)BulletAttributes.SizeY] / 2), 0,
-                bullet[(int)BulletAttributes.SizeX], bullet[(int)BulletAttributes.SizeY], 1);
-            if (bulletAabb.Intersects(target))
-            {
-                switch (bullet[(int)BulletAttributes.Shape])
-                {
-                    case 0:
-                        BulletAIs[(int)bullet[(int)BulletAttributes.AI]].OnDeath(
-                            ref bullet[(int)BulletAttributes.CenterX], ref bullet[(int)BulletAttributes.CenterY], 
-                            ref bullet[(int)BulletAttributes.DirectionX], 
-                            ref bullet[(int)BulletAttributes.DirectionY], ref bullet[(int)BulletAttributes.Rotation],
-                            ref bullet[(int)BulletAttributes.Speed], ref bullet[(int)BulletAttributes.Shape],
-                            ref bullet[(int)BulletAttributes.SizeX], ref bullet[(int)BulletAttributes.SizeY],
-                            ref bullet[(int)BulletAttributes.Time], ref bullet[(int)BulletAttributes.DrawAI],
-                            ref bullet[(int)BulletAttributes.HitLayer], ref bullet[(int)BulletAttributes.Damage],
-                            ref bullet[(int)BulletAttributes.Param1], ref bullet[(int)BulletAttributes.Param2],
-                            ref bullet[(int)BulletAttributes.Param3], ref bullet[(int)BulletAttributes.Param4], 
-                            this);
-                        return true;
-                    case 1:
-                        Vector2 targetCenter = new Vector2(target.Position.X + (target.Size.X / 2), 
-                            target.Position.Y + (target.Size.X / 2));
-                        float deltaX = (float)Math.Pow(targetCenter.X - bullet[(int)BulletAttributes.CenterX], 2);
-                        float deltaY = (float)Math.Pow(targetCenter.Y - bullet[(int)BulletAttributes.CenterY], 2);
-                        float radius = (float)Math.Pow((bullet[(int)BulletAttributes.SizeX] / 2) + 
-                            (target.Size.X / 2), 2);
-                        return Math.Sqrt(deltaX + deltaY) < Math.Sqrt(radius);
-                }
-            }
-            return false;
+            Enemy instance = new Enemy((int)texture, life, this, move, pattern, (int)Shapes.Circle, Vector2.One * 50, 
+                Vector2.One * 20);
+            instance.Death += HandleEnemyDeath;
+            ActiveEnemies.Add(instance);
         }
 
         public void ClearScreen()
@@ -273,28 +248,53 @@ namespace PathtoDarkSide.Content
 
         public bool DeleteConditions(float[] bullet)
         {
+            // If the bullet is out of bounds, delete it
             if (CheckOutOfBounds(bullet)) return true;
+
+            bool hit = false;
+            // Check what layer the bullet targets so it doesn't hit anything unintentionally 
             switch (bullet[(int)BulletAttributes.HitLayer])
             {
                 case (int)HitLayers.Player:
-                    if (Collide(bullet, Player.hitbox))
+                    // The player's hitbox is always a circle, the collision depends completely on the bullet's shape
+                    if (Player.Collided(bullet))
                     {
                         Player.OnHit(bullet[(int)BulletAttributes.Damage]);
-                        return true;
+                        hit = true; 
+                        break;
                     }
                     return false;
                 case (int)HitLayers.Enemy:
+                    // One check for each enemy
                     foreach (Enemy enemy in ActiveEnemies)
                     {
-                        if (Collide(bullet, enemy.hitbox))
+                        // Skip enemy collision if the enemy has iFrames
+                        if (enemy.Collided(bullet))
                         {
                             enemy.OnHit(bullet[(int)BulletAttributes.Damage]);
-                            return true;
+                            hit = true;
+                            break;
                         }
                     }
-                    return false;
+                    break;
             }
-            return false;
+
+            if (hit)
+            {
+                BulletAIs[(int)bullet[(int)BulletAttributes.AI]].OnDeath(
+                    ref bullet[(int)BulletAttributes.CenterX], ref bullet[(int)BulletAttributes.CenterY],
+                    ref bullet[(int)BulletAttributes.DirectionX],
+                    ref bullet[(int)BulletAttributes.DirectionY], ref bullet[(int)BulletAttributes.Rotation],
+                    ref bullet[(int)BulletAttributes.Speed], ref bullet[(int)BulletAttributes.Shape],
+                    ref bullet[(int)BulletAttributes.SizeX], ref bullet[(int)BulletAttributes.SizeY],
+                    ref bullet[(int)BulletAttributes.Time], ref bullet[(int)BulletAttributes.DrawAI],
+                    ref bullet[(int)BulletAttributes.HitLayer], ref bullet[(int)BulletAttributes.Damage],
+                    ref bullet[(int)BulletAttributes.Param1], ref bullet[(int)BulletAttributes.Param2],
+                    ref bullet[(int)BulletAttributes.Param3], ref bullet[(int)BulletAttributes.Param4],
+                    this);
+            }
+
+            return hit;
         }
 
         public void HandleEnemyDeath(object sender, EnemyDeathEventArgs e)
@@ -323,3 +323,14 @@ namespace PathtoDarkSide.Content
         }
     }
 }
+/*BulletAIs[(int)bullet[(int)BulletAttributes.AI]].OnDeath(
+    ref bullet[(int)BulletAttributes.CenterX], ref bullet[(int)BulletAttributes.CenterY],
+    ref bullet[(int)BulletAttributes.DirectionX],
+    ref bullet[(int)BulletAttributes.DirectionY], ref bullet[(int)BulletAttributes.Rotation],
+    ref bullet[(int)BulletAttributes.Speed], ref bullet[(int)BulletAttributes.Shape],
+    ref bullet[(int)BulletAttributes.SizeX], ref bullet[(int)BulletAttributes.SizeY],
+    ref bullet[(int)BulletAttributes.Time], ref bullet[(int)BulletAttributes.DrawAI],
+    ref bullet[(int)BulletAttributes.HitLayer], ref bullet[(int)BulletAttributes.Damage],
+    ref bullet[(int)BulletAttributes.Param1], ref bullet[(int)BulletAttributes.Param2],
+    ref bullet[(int)BulletAttributes.Param3], ref bullet[(int)BulletAttributes.Param4],
+    this);*/

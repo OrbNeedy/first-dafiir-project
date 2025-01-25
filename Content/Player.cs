@@ -1,6 +1,7 @@
 using Godot;
 using PathtoDarkSide.Content.Bullets.Emmiters;
 using PathtoDarkSide.Content.Bullets.Emmiters.Patterns;
+using PathtoDarkSide.Content.Enemies;
 using PathtoDarkSide.Content.Utils;
 
 namespace PathtoDarkSide.Content
@@ -88,12 +89,11 @@ namespace PathtoDarkSide.Content
                 emitter.position = position;
                 if (shooting)
                 {
-                    finalShoot = finalShoot && !emitter.Shoot(field.Margin, this, 1, 0, emitterOrbit);
+                    finalShoot = finalShoot && !emitter.Shoot(field.Margin, this, 1, 0, emitterOrbit, 1);
                 }
             }
             shooting = finalShoot;
 
-            // Subtract half of the hitbox's size to it's position so it will be in the middle
             hitbox = new Aabb(new Vector3(position.X - 5, position.Y - 5, 0), new Vector3(10, 10, 1));
 
             velocity.X = 0;
@@ -114,6 +114,72 @@ namespace PathtoDarkSide.Content
             if (iFrames > 0) color = new Color(7f, 0.2f, 0.2f, 0.5f);
             DrawEngine.AddDraw((int)Textures.Player, position.X, position.Y, 0, layer: -1, r: color.R,
                 g: color.G, b: color.B, a: color.A);
+            DrawEngine.AddDraw((int)Textures.Hitbox, position.X, position.Y, 0, layer: 0);
+
+        }
+
+        public bool Collided(float[] bullet)
+        {
+            // Special Line collision if statement
+            if (bullet[(int)BulletAttributes.Shape] == (int)Shapes.Line)
+            {
+                bool t = Collision.LinevCircle(
+                    new Vector2(bullet[(int)BulletAttributes.CenterX], bullet[(int)BulletAttributes.CenterY]),
+                    new Vector2(bullet[(int)BulletAttributes.SizeX], bullet[(int)BulletAttributes.SizeY]),
+                    position, hitbox.Size.X, bullet[(int)BulletAttributes.Width]);
+                if (t)
+                {
+                    GD.Print($"Player hit by a laser projectile");
+                }
+                return t;
+            }
+
+            bool aabbvAabbCheck = Collision.AabbvAabb(hitbox, new Aabb(bullet[(int)BulletAttributes.CenterX] -
+                (bullet[(int)BulletAttributes.SizeX] / 2), bullet[(int)BulletAttributes.CenterY] -
+                (bullet[(int)BulletAttributes.SizeY] / 2), 0,
+                bullet[(int)BulletAttributes.SizeX], bullet[(int)BulletAttributes.SizeY], 1));
+            if (aabbvAabbCheck)
+            {
+                switch (bullet[(int)BulletAttributes.Shape])
+                {
+                    case (int)Shapes.Rectangle:
+                        GD.Print($"Player hit by a rectangle");
+                        return true;
+                    case (int)Shapes.Circle:
+                        bool t = Collision.CirclevCircle(position, hitbox.Size.X,
+                            new Vector2(bullet[(int)BulletAttributes.CenterX], bullet[(int)BulletAttributes.CenterY]),
+                            bullet[(int)BulletAttributes.Width]);
+                        if (t)
+                        {
+                            GD.Print($"Player hit by a circle");
+                        }
+                        return t;
+                }
+            }
+            return false;
+        }
+
+        public bool Collided(Enemy enemy)
+        {
+            // Special Line collision if statement
+            // This may go unused since I doubt any line shaped enemies will appear
+            if (enemy.shape == (int)Shapes.Line)
+            {
+                return Collision.LinevCircle(enemy.position, enemy.hurtboxSize,
+                    position, hitbox.Size.X);
+            }
+
+            if (Collision.AabbvAabb(hitbox, enemy.hurtbox))
+            {
+                switch (enemy.shape)
+                {
+                    case (int)Shapes.Rectangle:
+                        return true;
+                    case (int)Shapes.Circle:
+                        return Collision.CirclevCircle(position, hitbox.Size.X, enemy.position, enemy.hurtboxSize.X);
+                }
+            }
+            return false;
         }
     }
 }
