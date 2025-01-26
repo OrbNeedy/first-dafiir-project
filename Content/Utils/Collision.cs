@@ -62,7 +62,7 @@ namespace PathtoDarkSide.Content.Utils
             return (left || top || right || bottom);
         }
 
-        public static bool LinevCircle(Vector2 lineStart, Vector2 lineEnd, Vector2 circleCenter, float radius, 
+        public static bool LinevCircle(Vector2 lineStart, Vector2 lineEnd, Vector2 circleCenter, float radius,
             float width = 1)
         {
             if (width <= 0) return false;
@@ -70,13 +70,16 @@ namespace PathtoDarkSide.Content.Utils
             bool endInside = lineEnd.DistanceTo(circleCenter) <= radius;
             if (startInside || endInside) return true;
 
-            float length = (lineEnd - lineStart).LengthSquared();
-            float dot = (((circleCenter.X - lineStart.X) * (lineEnd.X - lineStart.X)) + 
+            float length = Mathf.Sqrt(Mathf.Pow(lineStart.X - lineEnd.X, 2) + Mathf.Pow(lineStart.Y - lineEnd.Y, 2));
+            float dot = (((circleCenter.X - lineStart.X) * (lineEnd.X - lineStart.X)) +
                 ((circleCenter.Y - lineStart.Y) * (lineEnd.Y - lineStart.Y))) / Mathf.Pow(length, 2);
-            Vector2 closestPoint = lineStart + 
-                new Vector2(dot * (lineEnd.X - lineStart.X), dot * (lineEnd.Y - lineStart.Y));
+            Vector2 closestPoint = new Vector2(lineStart.X + (dot * (lineEnd.X - lineStart.X)),
+                lineStart.Y + (dot * (lineEnd.Y - lineStart.Y)));
 
-            return closestPoint.DistanceTo(circleCenter) <= radius+width;
+            bool onSegment = LinevPoint(lineStart, lineEnd, closestPoint);
+            if (!onSegment) return false;
+
+            return closestPoint.DistanceTo(circleCenter) <= radius + width;
         }
 
         public static bool LinevLine(Vector2 line1Start, Vector2 line1End, Vector2 line2Start,
@@ -107,6 +110,23 @@ namespace PathtoDarkSide.Content.Utils
         public static bool CirclevCircle(Vector2 circleCenter1, float radius1, Vector2 circleCenter2, float radius2)
         {
             return circleCenter1.DistanceTo(circleCenter2) <= radius1 + radius2;
+        }
+
+        public static bool LinevPoint(Vector2 lineStart, Vector2 lineEnd, Vector2 point, float width = 1f)
+        {
+            float d1 = lineStart.DistanceTo(point);
+            float d2 = lineEnd.DistanceTo(point);
+
+            float length = lineStart.DistanceTo(lineEnd);
+
+            return (d1 + d2 >= length - 0.1f && d1 + d2 <= length + 0.1f);
+        }
+
+        public static bool CirclevPoint(Vector2 circleCenter, float radius, Vector2 point)
+        {
+            float distance = Mathf.Sqrt(Mathf.Pow(point.X - circleCenter.X, 2) + 
+                Mathf.Pow(point.Y - circleCenter.Y, 2));
+            return false;
         }
     }
 }

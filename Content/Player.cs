@@ -126,10 +126,10 @@ namespace PathtoDarkSide.Content
                 bool t = Collision.LinevCircle(
                     new Vector2(bullet[(int)BulletAttributes.CenterX], bullet[(int)BulletAttributes.CenterY]),
                     new Vector2(bullet[(int)BulletAttributes.SizeX], bullet[(int)BulletAttributes.SizeY]),
-                    position, hitbox.Size.X, bullet[(int)BulletAttributes.Width]);
+                    position, hitbox.Size.X/2, bullet[(int)BulletAttributes.Width]);
                 if (t)
                 {
-                    GD.Print($"Player hit by a laser projectile");
+                    //GD.Print($"CvL collision center: {position}");
                 }
                 return t;
             }
@@ -166,7 +166,7 @@ namespace PathtoDarkSide.Content
             if (enemy.shape == (int)Shapes.Line)
             {
                 return Collision.LinevCircle(enemy.position, enemy.hurtboxSize,
-                    position, hitbox.Size.X);
+                    position, hitbox.Size.X/2);
             }
 
             if (Collision.AabbvAabb(hitbox, enemy.hurtbox))

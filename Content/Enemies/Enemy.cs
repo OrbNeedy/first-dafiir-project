@@ -28,7 +28,7 @@ namespace PathtoDarkSide.Content.Enemies
         public int shape; // Only the hitbox has a shape, the hurtbox is always a square
         public Aabb hurtbox; // The collider for this enemy vs the player
         public Vector2 hurtboxSize;
-        public bool imuneToStopTime;
+        public bool immuneToStopTime;
 
         private int texture2DIndex;
         private int frame = 0;
@@ -41,20 +41,21 @@ namespace PathtoDarkSide.Content.Enemies
         private Emitter[] emitters;
         private BulletField field;
         public float damageValue;
-        private Move movement;
+        private Behavior behavior;
         private Attack attack;
 
         public event EventHandler<EnemyDeathEventArgs> Death;
+        public event EventHandler<ModifyTimeEventArgs> ModifyTime;
 
-        public Enemy(int texture, float life, BulletField field, Move movement, Attack attack, int hitboxShape, 
+        public Enemy(int texture, float life, BulletField field, Behavior behavior, Attack attack, int hitboxShape, 
             Vector2 hitboxSize, Vector2 hurtboxSize)
         {
             texture2DIndex = texture;
             lifePoints = life;
             this.field = field;
             hitbox = new Aabb(new Vector3(position.X - 25, position.Y - 25, 0), new Vector3(50, 50, 1));
-            this.movement = movement;
-            movement.Initialize(1, field, ref position);
+            this.behavior = behavior;
+            behavior.Initialize(1, field, this);
             this.attack = attack;
             attack.Initialize(1, 1, field, ref emitters);
             this.shape = hitboxShape;
@@ -66,7 +67,7 @@ namespace PathtoDarkSide.Content.Enemies
         {
             frameCounter++;
 
-            movement.Update(1, field.Margin, field.Player, ref position);
+            behavior.Update(1, field.Margin, field.Player, this);
             attack.Update(1, 1, field.Margin, field.Player, this, ref emitters);
 
             foreach (var emitter in emitters)
@@ -95,7 +96,7 @@ namespace PathtoDarkSide.Content.Enemies
                 }
             }
 
-            if (movement.DeathCondition(position, field) && !dead)
+            if (behavior.DeathCondition(position, field) && !dead)
             {
                 lifePoints = 0;
                 dead = true;

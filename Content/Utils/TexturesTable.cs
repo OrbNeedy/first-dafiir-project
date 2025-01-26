@@ -14,11 +14,22 @@ namespace PathtoDarkSide.Content.Utils
             [(int)Textures.Hitbox] = new[] { (Texture2D)GD.Load("res://Assets/Player/Hitbox.png") },
             [(int)Textures.Outer] = new[] { (Texture2D)GD.Load("res://Assets/Bullets/OuterBullet.png") },
             [(int)Textures.Inner] = new[] { (Texture2D)GD.Load("res://Assets/Bullets/InnerBullet.png") },
-            [(int)Textures.Star] = new[] { (Texture2D)GD.Load("res://Assets/Bullets/Star.png") } 
+            [(int)Textures.Star] = new[] { (Texture2D)GD.Load("res://Assets/Bullets/Star.png") }
         };
 
         public static void Initialize()
         {
+            // TODO: Make the rest of the laser parts (Start and end(Optional))
+            Texture2D[] laser1 = new Texture2D[6];
+            for (int i = 0; i < 6; i++)
+            {
+                AtlasTexture texture = new AtlasTexture();
+                texture.Atlas = (Texture2D)GD.Load("res://Assets/Bullets/LaserSegment.png");
+                texture.Region = new Rect2(24 * i, 0, 24, 20);
+                laser1[i] = texture;
+            }
+            LoadedTextures[(int)Textures.Laser] = laser1;
+
             Texture2D[] enemy1 = new Texture2D[3];
             for (int i = 0; i < 3; i++)
             {

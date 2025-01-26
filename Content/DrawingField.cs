@@ -2,6 +2,7 @@
 using PathtoDarkSide.Content.Utils;
 using static PathtoDarkSide.Content.Utils.VisualTables;
 using System.Collections.Generic;
+using PathtoDarkSide.Content;
 
 
 public partial class DrawingField : Control
@@ -75,19 +76,22 @@ public partial class DrawingField : Control
             DrawTexture(TexturesTable.LoadedTextures[(int)drawInstruction[(int)EffectAttributes.Texture]]
                 [frame], -spriteOffset, modulate);
 
-            drawInstruction[(int)EffectAttributes.Time] -= 1;
+            if (!BulletField.stoppedTime)
+            {
+                drawInstruction[(int)EffectAttributes.Time] -= 1;
 
-            VisualEffects[(int)drawInstruction[(int)EffectAttributes.AI]].Update(
-                ref drawInstruction[(int)EffectAttributes.Texture], 
+                VisualEffects[(int)drawInstruction[(int)EffectAttributes.AI]].Update(
+                ref drawInstruction[(int)EffectAttributes.Texture],
                 ref drawInstruction[(int)EffectAttributes.PositionX],
-                ref drawInstruction[(int)EffectAttributes.PositionY], 
-                ref drawInstruction[(int)EffectAttributes.Rotation], 
-                ref drawInstruction[(int)EffectAttributes.ScaleX], ref drawInstruction[(int)EffectAttributes.ScaleY], 
-                ref drawInstruction[(int)EffectAttributes.R], ref drawInstruction[(int)EffectAttributes.G], 
-                ref drawInstruction[(int)EffectAttributes.B], ref drawInstruction[(int)EffectAttributes.A], 
-                ref drawInstruction[(int)EffectAttributes.Layer], ref drawInstruction[(int)EffectAttributes.Frame], 
-                ref drawInstruction[(int)EffectAttributes.Time], ref drawInstruction[(int)EffectAttributes.Param1], 
+                ref drawInstruction[(int)EffectAttributes.PositionY],
+                ref drawInstruction[(int)EffectAttributes.Rotation],
+                ref drawInstruction[(int)EffectAttributes.ScaleX], ref drawInstruction[(int)EffectAttributes.ScaleY],
+                ref drawInstruction[(int)EffectAttributes.R], ref drawInstruction[(int)EffectAttributes.G],
+                ref drawInstruction[(int)EffectAttributes.B], ref drawInstruction[(int)EffectAttributes.A],
+                ref drawInstruction[(int)EffectAttributes.Layer], ref drawInstruction[(int)EffectAttributes.Frame],
+                ref drawInstruction[(int)EffectAttributes.Time], ref drawInstruction[(int)EffectAttributes.Param1],
                 ref drawInstruction[(int)EffectAttributes.Param2]);
+            }
         }
 
         DrawQueue.RemoveAll((x) => x[(int)EffectAttributes.Time] <= 0);

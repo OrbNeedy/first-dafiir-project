@@ -1,10 +1,6 @@
 using Godot;
 using PathtoDarkSide.Content;
-using PathtoDarkSide.Content.Enemies;
 using PathtoDarkSide.Content.Utils;
-using System.Collections.Generic;
-using PathtoDarkSide.Content.Bullets.Emmiters;
-using PathtoDarkSide.Content.Bullets.Emmiters.Patterns;
 
 
 public partial class Main : Node2D
@@ -19,7 +15,6 @@ public partial class Main : Node2D
         AddChild(DrawEngine.DrawingField);
         bulletField = new BulletField(GetViewportRect(), this);
         randomNumberGenerator.Randomize();
-        // TODO: Change the way new Emitters are added to enemies
     }
 
     public override void _Process(double delta)

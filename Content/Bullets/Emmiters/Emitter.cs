@@ -14,10 +14,11 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters
         public int maxCycle = 2;
         public Pattern pattern;
 
-        public Emitter(Pattern pattern, int maxTimer, int maxCycle) 
+        public Emitter(Pattern pattern, int maxTimer, int maxCycle, int initialTimer = 0) 
         { 
             this.pattern = pattern;
             this.maxTimer = maxTimer;
+            timer = initialTimer;
             this.maxCycle = maxCycle;
         }
 

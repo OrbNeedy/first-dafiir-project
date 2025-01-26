@@ -6,10 +6,18 @@ using System.Threading.Tasks;
 
 namespace PathtoDarkSide.Content.Utils
 {
+    public enum TimeMode
+    {
+        Normal,
+        Slow, 
+        Stopped
+    }
+
     public enum DrawTypes
     {
         Simple,
-        BackAndFront
+        BackAndFront, 
+        Laser
     }
 
     public enum Effects
@@ -25,7 +33,8 @@ namespace PathtoDarkSide.Content.Utils
         Pixie,
         Outer,
         Inner,
-        Star
+        Star, 
+        Laser
     }
 
     public enum HitLayers
@@ -41,6 +50,7 @@ namespace PathtoDarkSide.Content.Utils
 
     public enum PatternAIs
     {
-        Circle
+        Circle, 
+        Laser
     }
 }
