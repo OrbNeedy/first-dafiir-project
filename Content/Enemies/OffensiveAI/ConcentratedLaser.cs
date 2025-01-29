@@ -10,18 +10,18 @@ namespace PathtoDarkSide.Content.Enemies.OffensiveAI
         {
         }
 
-        public override void Initialize(int difficulty, int speed, BulletField field, ref Emitter[] emitters)
+        public override void Initialize(int difficulty, int speed, ref Emitter[] emitters)
         {
-            emitters = new Emitter[] { new Emitter(new EnemyFocusedLaser(field), 300, 2) };
+            emitters = new Emitter[] { new Emitter(new EnemyFocusedLaser(), 300, 2) };
         }
 
-        public override void Update(int difficulty, int speed, Rect2 margin, Player player, Enemy enemy, 
+        public override void Update(int difficulty, int speed, Enemy enemy, 
             ref Emitter[] emitters)
         {
             foreach (Emitter emitter in emitters)
             {
                 emitter.position = enemy.position;
-                emitter.target = player.position;
+                emitter.target = Main.bulletField.Player.position;
             }
         }
     }

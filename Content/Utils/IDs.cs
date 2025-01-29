@@ -6,6 +6,22 @@ using System.Threading.Tasks;
 
 namespace PathtoDarkSide.Content.Utils
 {
+    public enum NotificationType
+    {
+        PowerUp, 
+        StyleChange, 
+        BonusSuccess, 
+        BonusFailed
+    }
+
+    public enum Difficulty
+    {
+        Easy, 
+        Normal, 
+        Hard, 
+        VeryHard
+    }
+
     public enum TimeMode
     {
         Normal,

@@ -11,12 +11,10 @@ namespace PathtoDarkSide.Content.Enemies
     public class EnemyDeathEventArgs : EventArgs
     {
         public int points;
-        public bool notify;
 
-        public EnemyDeathEventArgs(int points, bool notify = false)
+        public EnemyDeathEventArgs(int points)
         {
             this.points = points;
-            this.notify = notify;
         }
     }
 
@@ -32,71 +30,71 @@ namespace PathtoDarkSide.Content.Enemies
 
         private int texture2DIndex;
         private int frame = 0;
-        private int frameCounter = 0;
+        public int maxFrameCount;
+        private int frameCount = 0;
 
         public float lifePoints;
         public bool dead = false;
         public int iFrames = 0;
 
         private Emitter[] emitters;
-        private BulletField field;
         public float damageValue;
         private Behavior behavior;
         private Attack attack;
 
         public event EventHandler<EnemyDeathEventArgs> Death;
-        public event EventHandler<ModifyTimeEventArgs> ModifyTime;
 
-        public Enemy(int texture, float life, BulletField field, Behavior behavior, Attack attack, int hitboxShape, 
-            Vector2 hitboxSize, Vector2 hurtboxSize)
+        public Enemy(int texture, float life, BulletField field, Behavior behavior, Attack attack, 
+            Vector2 hitboxSize, Vector2 hurtboxSize, int maxFrameCount = 18, int hitboxShape = 0)
         {
             texture2DIndex = texture;
             lifePoints = life;
-            this.field = field;
-            hitbox = new Aabb(new Vector3(position.X - 25, position.Y - 25, 0), new Vector3(50, 50, 1));
+            hitbox = new Aabb(new Vector3(position.X - (hitboxSize.X / 2), position.Y - (hitboxSize.Y / 2), 0),
+                new Vector3(hitboxSize.X, hitboxSize.Y, 1));
+            hurtbox = new Aabb(new Vector3(position.X - (hurtboxSize.X / 2), 
+                position.Y - (hurtboxSize.Y / 2), 0), new Vector3(hurtboxSize.X, hurtboxSize.Y, 1));
             this.behavior = behavior;
-            behavior.Initialize(1, field, this);
+            behavior.Initialize(1, this);
             this.attack = attack;
-            attack.Initialize(1, 1, field, ref emitters);
+            attack.Initialize(1, 1, ref emitters);
             this.shape = hitboxShape;
             this.hitboxSize = hitboxSize;
             this.hurtboxSize = hurtboxSize;
+            this.maxFrameCount = maxFrameCount;
         }
 
-        public void Update()
+        public void Update(Rect2 margin, Player? player)
         {
-            frameCounter++;
+            frameCount++;
 
-            behavior.Update(1, field.Margin, field.Player, this);
-            attack.Update(1, 1, field.Margin, field.Player, this, ref emitters);
+            behavior.Update(1, this);
+            attack.Update(1, 1, this, ref emitters);
 
             foreach (var emitter in emitters)
             {
                 emitter.Update();
-                emitter.Shoot(field.Margin, field.Player, 1, 1, damageValue);
+                emitter.Shoot(1, 1, damageValue);
             }
 
-            hitbox = new Aabb(new Vector3(position.X - (hitboxSize.X / 2), position.Y - (hitboxSize.Y / 2), 0), 
-                new Vector3(hitboxSize.X, hitboxSize.Y, 1));
-            hurtbox = new Aabb(new Vector3(position.X - (hurtboxSize.X / 2), position.Y - (hurtboxSize.Y / 2), 0),
-                new Vector3(hurtboxSize.X, hurtboxSize.Y, 1));
+            hitbox.Position = new Vector3(position.X, position.Y, 0);
+            hurtbox.Position = new Vector3(position.X, position.Y, 0);
 
             if (iFrames > 0)
             {
                 iFrames--;
             }
 
-            if (frameCounter > 20)
+            if (frameCount > maxFrameCount)
             {
                 frame++;
-                frameCounter = 0;
-                if (frame >= 3)
+                frameCount = 0;
+                if (frame >= TexturesTable.LoadedTextures[texture2DIndex].Length) 
                 {
                     frame = 0;
                 }
             }
 
-            if (behavior.DeathCondition(position, field) && !dead)
+            if (behavior.DeathCondition(position, margin) && !dead)
             {
                 lifePoints = 0;
                 dead = true;
@@ -104,14 +102,14 @@ namespace PathtoDarkSide.Content.Enemies
             }
         }
 
-        public void OnHit(float damage, bool giveIframes = false)
+        public void OnHit(float damage, Rect2 margin, bool giveIframes = false)
         {
             // The enemy can only take damage and die of it if it's inside the boundaries of the bullet field plus
             // 20 pixels, but a sound should still play if it's hit
-            if (position.X < field.Margin.Position.X - 20 ||
-                position.X > field.Margin.Size.X + field.Margin.Position.X + 20 ||
-                position.Y < field.Margin.Position.Y - 20 ||
-                position.Y > field.Margin.Size.Y + field.Margin.Position.Y + 20 ||
+            if (position.X < margin.Position.X - 20 ||
+                position.X > margin.Size.X + margin.Position.X + 20 ||
+                position.Y < margin.Position.Y - 20 ||
+                position.Y > margin.Size.Y + margin.Position.Y + 20 ||
                 iFrames > 0) return;
             lifePoints -= damage;
             if (giveIframes) iFrames = 7;

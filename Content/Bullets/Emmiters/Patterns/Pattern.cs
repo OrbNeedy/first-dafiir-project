@@ -13,13 +13,13 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
          2. The pattern can't shoot bullets if the emitter is not in the leftmost part of the screen*/
         /*Exceptions:
          Bosses*/
-        public Pattern(BulletField field)
+        public Pattern()
         {
-            BulletSpawn += field.HandleBulletSpawn;
+            BulletSpawn += Main.bulletField.HandleBulletSpawn;
         }
 
-        public virtual bool Shoot(Rect2 margin, Player player, Vector2 position, int cycle, int maxCycle, 
-            Vector2 target, int dificulty, int speed, params float[] parameters)
+        public virtual bool Shoot(Vector2 position, int cycle, int maxCycle, Vector2 target, int dificulty, 
+            int speed, params float[] parameters)
         {
             int bullets = 10 * dificulty;
             Vector2 direction = position.DirectionTo(target);
@@ -27,7 +27,7 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
             {
                 SpawnBullet(this, new BulletSpawnEventArgs(position, direction, 0, 1 + (speed), 
                     visualParam1: (int)Textures.Inner, sizeX: 20, sizeY: 20));
-                direction = direction.Rotated(MathConsts.TwoPi / bullets);
+                direction = direction.Rotated(Mathf.Tau / bullets);
             }
             return true;
         }
@@ -37,12 +37,12 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
             BulletSpawn?.Invoke(sender, e);
         }
 
-        public virtual bool CanShoot(Vector2 position, Rect2 margin, Player player)
+        public virtual bool CanShoot(Vector2 position)
         {
-            bool val = position.X > margin.Position.X + 100 &&
-                position.X < margin.Size.X + margin.Position.X &&
-                position.Y < margin.Size.Y + margin.Position.Y &&
-                position.Y > margin.Position.Y;
+            bool val = position.X > Main.bulletField.Margin.Position.X + 100 &&
+                position.X < Main.bulletField.Margin.Size.X + Main.bulletField.Margin.Position.X &&
+                position.Y < Main.bulletField.Margin.Size.Y + Main.bulletField.Margin.Position.Y &&
+                position.Y > Main.bulletField.Margin.Position.Y;
             return val;
         }
     }

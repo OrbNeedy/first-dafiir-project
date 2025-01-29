@@ -1,20 +1,30 @@
 using Godot;
+using PathtoDarkSide;
 using PathtoDarkSide.Content;
 using PathtoDarkSide.Content.Utils;
-
+using System;
 
 public partial class Main : Node2D
 {
-    public BulletField bulletField;
     public static RandomNumberGenerator randomNumberGenerator = new RandomNumberGenerator();
+    public static BulletField bulletField = new BulletField();
+
+    public static int defaultDifficulty;
+    
+    public static int gameplayTimeFlow;
+    public int timeModification = 0;
+    
+    public static bool stoppedTime = false;
 
     public override void _Ready()
     {
+        // Load stored default difficulty and set it
+        randomNumberGenerator.Randomize();
         TexturesTable.Initialize();
         DrawEngine.Initialize();
         AddChild(DrawEngine.DrawingField);
-        bulletField = new BulletField(GetViewportRect(), this);
-        randomNumberGenerator.Randomize();
+        bulletField.Initialize(GetViewportRect());
+        bulletField.ModifyTime += HandleTimeModeChange;
     }
 
     public override void _Process(double delta)
@@ -22,14 +32,49 @@ public partial class Main : Node2D
         float fps = 0;
         if (delta > 0) fps = (float)(60f / (60f * delta));
 
-        /*if (randomNumberGenerator.RandiRange(0, 100) < 50)
-        {
-            bulletField.AddProjectile(new Vector2(600, 300),
-                new Vector2(1, 0).Rotated(randomNumberGenerator.RandfRange(0, MathConsts.TwoPi)), 0,
-                randomNumberGenerator.RandfRange(0.5f, 5), drawScript: (int)DrawTypes.BackAndFront,
-                visualParam1: (int)Textures.Inner, visualParam2: (int)Textures.Outer, r: 1, g: 0.1f, b: 0.1f);
-        }*/
+        ProcessInputs();
+        bulletField.Update(delta, stoppedTime);
+    }
 
-        bulletField.Update(delta);
+    private void ProcessInputs()
+    {
+        if (Input.IsActionJustPressed("space"))
+        {
+            timeModification++;
+            if (timeModification > 2) timeModification = 0;
+        }
+
+        switch (timeModification)
+        {
+            case 0:
+                stoppedTime = false;
+                break;
+            case 1:
+                stoppedTime = !stoppedTime;
+                break;
+            case 2:
+                stoppedTime = true;
+                break;
+        }
+    }
+
+    public void HandleTimeModeChange(object? sender, ModifyTimeEventArgs e)
+    {
+        timeModification = e.newTime;
+    }
+}
+
+namespace PathtoDarkSide
+{
+    public class ModifyTimeEventArgs : EventArgs
+    {
+        public int newTime;
+
+        public ModifyTimeEventArgs(int newTime)
+        {
+            this.newTime = newTime;
+            if (newTime > (int)TimeMode.Stopped) this.newTime = (int)TimeMode.Stopped;
+            if (newTime < (int)TimeMode.Normal) this.newTime = (int)TimeMode.Normal;
+        }
     }
 }

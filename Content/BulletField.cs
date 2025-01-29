@@ -122,61 +122,52 @@ namespace PathtoDarkSide.Content
         }
     }
 
-    public class ModifyTimeEventArgs : EventArgs
+    public class NotifyEventArgs : EventArgs
     {
-        public int newTime;
+        public int value;
+        public NotificationType type;
 
-        public ModifyTimeEventArgs(int newTime)
+        public NotifyEventArgs(int value, NotificationType type)
         {
-            this.newTime = newTime;
-            if (newTime > 2) this.newTime = 2;
-            if (newTime < 0) this.newTime = 0;
+            this.value = value;
+            this.type = type;
         }
     }
 
     public class BulletField
     {
         public Rect2 Margin;
-        public Main main;
         public static Bullet[] BulletAIs = new Bullet[] { new Bullet(), new Laser() };
         public List<float[]> ActiveBullets = new List<float[]>();
-
         public List<Enemy> ActiveEnemies = new List<Enemy>();
         public Player Player;
-        public bool paused = false;
-        public int timeModification = 0;
-        public static bool stoppedTime = false;
+        
         public bool hidePlayer = false;
+        public bool paused = false;
 
-        public BulletField(Rect2 margin, Main main) 
+        public event EventHandler<ModifyTimeEventArgs> ModifyTime;
+
+        public BulletField(Rect2 margin) 
         {
             Margin = margin;
-            this.main = main;
-            Player = new Player(this);
+            Player = new Player();
             AddEnemy(Textures.Pixie, 5000, new Behavior(-2), new ConcentratedLaser(0));
         }
 
-        public void Update(double delta)
+        public BulletField()
         {
-            if (Input.IsActionJustPressed("space"))
-            {
-                timeModification++;
-                if (timeModification > 2) timeModification = 0;
-            }
 
-            switch (timeModification)
-            {
-                case 0:
-                    stoppedTime = false;
-                    break;
-                case 1:
-                    stoppedTime = !stoppedTime;
-                    break;
-                case 2:
-                    stoppedTime = true;
-                    break;
-            }
+        }
 
+        public void Initialize(Rect2 margin)
+        {
+            Margin = margin;
+            Player = new Player();
+            AddEnemy(Textures.Pixie, 5000, new Behavior(-2), new ConcentratedLaser(0));
+        }
+
+        public void Update(double delta, bool stoppedTime)
+        {
             foreach (var bullet in ActiveBullets)
             {
                 if ((int)bullet[(int)BulletAttributes.DrawAI] < 0 ||
@@ -201,7 +192,7 @@ namespace PathtoDarkSide.Content
                         ref bullet[(int)BulletAttributes.DrawAI], ref bullet[(int)BulletAttributes.HitLayer], 
                         ref bullet[(int)BulletAttributes.Damage], ref bullet[(int)BulletAttributes.Param1], 
                         ref bullet[(int)BulletAttributes.Param2], ref bullet[(int)BulletAttributes.Param3], 
-                        ref bullet[(int)BulletAttributes.Param4], this);
+                        ref bullet[(int)BulletAttributes.Param4]);
                 }
 
                 // Postdraw bullet
@@ -212,7 +203,7 @@ namespace PathtoDarkSide.Content
                     bullet[(int)BulletAttributes.Time], ref bullet[(int)BulletAttributes.VisualParam1], 
                     ref bullet[(int)BulletAttributes.VisualParam2], bullet[(int)BulletAttributes.R], 
                     bullet[(int)BulletAttributes.G], bullet[(int)BulletAttributes.B], 
-                    bullet[(int)BulletAttributes.A], this);
+                    bullet[(int)BulletAttributes.A]);
 
                 if (!stoppedTime && !paused)
                 {
@@ -227,7 +218,7 @@ namespace PathtoDarkSide.Content
             {
                 if ((!stoppedTime || enemy.immuneToStopTime) && !paused)
                 {
-                    enemy.Update();
+                    enemy.Update(Margin, Player);
                     if (Player.iFrames <= 0)
                     {
                         if (Player.Collided(enemy))
@@ -248,7 +239,7 @@ namespace PathtoDarkSide.Content
             }
             Player.Draw();
 
-            if (Main.randomNumberGenerator.RandiRange(0, 100) < 10 && !stoppedTime && !paused)
+            if (Main.randomNumberGenerator.RandiRange(0, 100) < -10 && !stoppedTime && !paused)
             {
                 AddEnemy(Textures.Pixie, 40, new Behavior(-1), new Attack(0));
             }
@@ -277,18 +268,18 @@ namespace PathtoDarkSide.Content
         }
 
         public void AddEnemy(Textures texture, float life, Behavior move, Attack pattern, Vector2 hitboxSize, 
-            Vector2 hurtboxSize, int shape = (int)Shapes.Circle)
+            Vector2 hurtboxSize, int maxFrameCount = 18, int shape = (int)Shapes.Circle)
         {
-            Enemy instance = new Enemy((int)texture, life, this, move, pattern, shape, hitboxSize, hurtboxSize);
+            Enemy instance = new Enemy((int)texture, life, this, move, pattern, hitboxSize, hurtboxSize, 
+                maxFrameCount, shape);
             instance.Death += HandleEnemyDeath;
-            instance.ModifyTime += HandleTimeModeChange;
             ActiveEnemies.Add(instance);
         }
 
-        public void AddEnemy(Textures texture, float life, Behavior move, Attack pattern)
+        public void AddEnemy(Textures texture, float life, Behavior move, Attack pattern, int maxFrameCount = 18)
         {
-            Enemy instance = new Enemy((int)texture, life, this, move, pattern, (int)Shapes.Circle, Vector2.One * 50, 
-                Vector2.One * 20);
+            Enemy instance = new Enemy((int)texture, life, this, move, pattern, Vector2.One * 50, 
+                Vector2.One * 25, maxFrameCount, (int)Shapes.Circle);
             instance.Death += HandleEnemyDeath;
             ActiveEnemies.Add(instance);
         }
@@ -313,6 +304,7 @@ namespace PathtoDarkSide.Content
                     {
                         //GD.Print("Player got hit");
                         Player.OnHit(bullet[(int)BulletAttributes.Damage]);
+                        bullet[(int)BulletAttributes.Penetration]--;
                         hit = true; 
                         break;
                     }
@@ -324,7 +316,8 @@ namespace PathtoDarkSide.Content
                         if (enemy.Collided(bullet))
                         {
                             //GD.Print("Enemy got hit");
-                            enemy.OnHit(bullet[(int)BulletAttributes.Damage]);
+                            enemy.OnHit(bullet[(int)BulletAttributes.Damage], Margin);
+                            bullet[(int)BulletAttributes.Penetration]--;
                             hit = true;
                             break;
                         }
@@ -332,9 +325,8 @@ namespace PathtoDarkSide.Content
                     break;
             }
 
-            if (hit)
+            if (hit && bullet[(int)BulletAttributes.Penetration] == 0)
             {
-                bullet[(int)BulletAttributes.Penetration]--;
                 BulletAIs[(int)bullet[(int)BulletAttributes.AI]].OnDeath(
                     ref bullet[(int)BulletAttributes.CenterX], ref bullet[(int)BulletAttributes.CenterY],
                     ref bullet[(int)BulletAttributes.DirectionX],
@@ -345,19 +337,18 @@ namespace PathtoDarkSide.Content
                     ref bullet[(int)BulletAttributes.DrawAI], ref bullet[(int)BulletAttributes.HitLayer], 
                     ref bullet[(int)BulletAttributes.Damage], ref bullet[(int)BulletAttributes.Param1], 
                     ref bullet[(int)BulletAttributes.Param2], ref bullet[(int)BulletAttributes.Param3], 
-                    ref bullet[(int)BulletAttributes.Param4], this);
+                    ref bullet[(int)BulletAttributes.Param4]);
             }
         }
 
         public void HandleEnemyDeath(object sender, EnemyDeathEventArgs e)
         {
-            if (e.notify)
-            {
-                GD.Print($"An enemy died and dropped {e.points}");
-            } else
-            {
-                GD.Print("An enemy died, but don't tell anyone");
-            }
+            // Add score
+        }
+
+        public void HandleTimeChange(object sender, ModifyTimeEventArgs e)
+        {
+            ModifyTime?.Invoke(sender, e);
         }
 
         public bool CheckOutOfBounds(float[] bullet)
@@ -369,11 +360,6 @@ namespace PathtoDarkSide.Content
                 bullet[(int)BulletAttributes.CenterY] >= Margin.Position.Y + Margin.Size.Y + limit || 
                 bullet[(int)BulletAttributes.CenterY] <= Margin.Position.Y - limit || 
                 outOfPenetration;
-        }
-
-        public void HandleTimeModeChange(object? sender, ModifyTimeEventArgs e)
-        {
-            timeModification = e.newTime;
         }
 
         public int GetBulletCount()

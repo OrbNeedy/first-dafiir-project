@@ -76,7 +76,7 @@ public partial class DrawingField : Control
             DrawTexture(TexturesTable.LoadedTextures[(int)drawInstruction[(int)EffectAttributes.Texture]]
                 [frame], -spriteOffset, modulate);
 
-            if (!BulletField.stoppedTime)
+            if (!Main.stoppedTime)
             {
                 drawInstruction[(int)EffectAttributes.Time] -= 1;
 

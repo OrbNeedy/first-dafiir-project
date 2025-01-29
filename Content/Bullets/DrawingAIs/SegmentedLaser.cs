@@ -7,7 +7,7 @@ namespace PathtoDarkSide.Content.Bullets.DrawingAIs
     {
         public override void Postdraw(float centerX, float centerY, float directionX, float directionY,
             float sizeX, float sizeY, float rotation, float time, ref float ai1, ref float ai2,
-            float r, float g, float b, float a, BulletField field)
+            float r, float g, float b, float a)
         {
             int frameLength = TexturesTable.LoadedTextures[(int)Textures.Laser].Length;
             
@@ -30,7 +30,7 @@ namespace PathtoDarkSide.Content.Bullets.DrawingAIs
 
             for (int i = 0; i < length; i += 20)
             {
-                if ((time < 45 || time > 168) && time % 10 == 0)
+                if ((time < 45 || time > 168) && time % 12 == 0)
                 {
                     ai1 = Main.randomNumberGenerator.RandiRange(0, 1);
                 }

@@ -5,12 +5,12 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
 {
     public class EnemyFocusedLaser : Pattern
     {
-        public EnemyFocusedLaser(BulletField field) : base(field)
+        public EnemyFocusedLaser() : base()
         {
         }
 
-        public override bool Shoot(Rect2 margin, Player player, Vector2 position, int cycle, int maxCycle, 
-            Vector2 target, int dificulty, int speed, params float[] parameters)
+        public override bool Shoot(Vector2 position, int cycle, int maxCycle, Vector2 target, int dificulty, 
+            int speed, params float[] parameters)
         {
             Vector2 direction = position.DirectionTo(target);
             Vector2 finalPosition = position + (direction * 1000);

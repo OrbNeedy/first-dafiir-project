@@ -7,12 +7,12 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
     {
         private float rotation = 0;
 
-        public PlayerFocusShot(BulletField field) : base(field)
+        public PlayerFocusShot() : base()
         {
-            BulletSpawn += field.HandleBulletSpawn;
+            BulletSpawn += Main.bulletField.HandleBulletSpawn;
         }
 
-        public override bool Shoot(Rect2 margin, Player player, Vector2 position, int cycle, int maxCycle, 
+        public override bool Shoot(Vector2 position, int cycle, int maxCycle, 
             Vector2 target, int dificulty, int speed, params float[] parameters)
         {
             for (int i = 0; i < 3; i++)
@@ -28,7 +28,7 @@ namespace PathtoDarkSide.Content.Bullets.Emmiters.Patterns
             return true;
         }
 
-        public override bool CanShoot(Vector2 position, Rect2 margin, Player player)
+        public override bool CanShoot(Vector2 position)
         {
             return true;
         }

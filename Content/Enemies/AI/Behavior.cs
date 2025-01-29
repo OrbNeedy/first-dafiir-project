@@ -1,4 +1,5 @@
 ﻿using Godot;
+using System;
 
 namespace PathtoDarkSide.Content.Enemies.AI
 {
@@ -6,17 +7,21 @@ namespace PathtoDarkSide.Content.Enemies.AI
     {
         public int type;
 
+        public event EventHandler<ModifyTimeEventArgs> ModifyTime;
+
         public Behavior(int type)
         {
             this.type = type;
         }
 
-        public virtual void Initialize(int speed, BulletField field, Enemy enemy)
+        public virtual void Initialize(int speed, Enemy enemy)
         {
-            enemy.position = new Vector2(field.Margin.Size.X + 20, field.Margin.Position.Y);
+            ModifyTime += Main.bulletField.HandleTimeChange;
+            enemy.position = new Vector2(Main.bulletField.Margin.Size.X + 20, Main.bulletField.Margin.Position.Y);
             if (type == -1)
             {
-                enemy.position.Y += Main.randomNumberGenerator.RandfRange(field.Margin.Position.Y, field.Margin.Size.Y);
+                enemy.position.Y += Main.randomNumberGenerator.RandfRange(Main.bulletField.Margin.Position.Y, 
+                    Main.bulletField.Margin.Size.Y);
             }
             if (type == -2)
             {
@@ -25,7 +30,7 @@ namespace PathtoDarkSide.Content.Enemies.AI
             }
         }
 
-        public virtual void Update(int speed, Rect2 margin, Player player, Enemy enemy)
+        public virtual void Update(int speed, Enemy enemy)
         {
             if (type == -2)
             {
@@ -34,9 +39,14 @@ namespace PathtoDarkSide.Content.Enemies.AI
             enemy.position.X -= 3 + (speed*0.25f);
         }
 
-        public bool DeathCondition(Vector2 position, BulletField field)
+        public void ChangeTimeFlow(ModifyTimeEventArgs e)
         {
-            return position.X < field.Margin.Position.X - 20;
+            ModifyTime?.Invoke(this, e);
+        }
+
+        public bool DeathCondition(Vector2 position, Rect2 margin)
+        {
+            return position.X < margin.Position.X - 20;
         }
     }
 }

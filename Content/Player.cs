@@ -15,15 +15,13 @@ namespace PathtoDarkSide.Content
 
         public bool shooting = false;
         public Vector2 velocity = new Vector2();
-        public BulletField field;
         private float speed = 6;
         public bool focus = false;
         public int iFrames = 0;
 
-        public Player(BulletField field)
+        public Player()
         {
-            emitters = new Emitter[] { new Emitter(new PlayerFocusShot(field), 5, 1) };
-            this.field = field;
+            emitters = new Emitter[] { new Emitter(new PlayerFocusShot(), 5, 1) };
             hitbox = new Aabb(new Vector3(position.X-10, position.Y-10, 0), new Vector3(20, 20, 1));
         }
 
@@ -89,7 +87,7 @@ namespace PathtoDarkSide.Content
                 emitter.position = position;
                 if (shooting)
                 {
-                    finalShoot = finalShoot && !emitter.Shoot(field.Margin, this, 1, 0, emitterOrbit, 1);
+                    finalShoot = finalShoot && !emitter.Shoot(1, 0, emitterOrbit, 1);
                 }
             }
             shooting = finalShoot;
@@ -143,7 +141,6 @@ namespace PathtoDarkSide.Content
                 switch (bullet[(int)BulletAttributes.Shape])
                 {
                     case (int)Shapes.Rectangle:
-                        GD.Print($"Player hit by a rectangle");
                         return true;
                     case (int)Shapes.Circle:
                         bool t = Collision.CirclevCircle(position, hitbox.Size.X,
@@ -151,7 +148,6 @@ namespace PathtoDarkSide.Content
                             bullet[(int)BulletAttributes.Width]);
                         if (t)
                         {
-                            GD.Print($"Player hit by a circle");
                         }
                         return t;
                 }
