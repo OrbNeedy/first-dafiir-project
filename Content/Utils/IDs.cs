@@ -11,7 +11,8 @@ namespace PathtoDarkSide.Content.Utils
         PowerUp, 
         StyleChange, 
         BonusSuccess, 
-        BonusFailed
+        BonusFailed, 
+        StageAnnouncement
     }
 
     public enum Difficulty

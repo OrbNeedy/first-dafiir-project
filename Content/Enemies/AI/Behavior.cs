@@ -18,6 +18,12 @@ namespace PathtoDarkSide.Content.Enemies.AI
         {
             ModifyTime += Main.bulletField.HandleTimeChange;
             enemy.position = new Vector2(Main.bulletField.Margin.Size.X + 20, Main.bulletField.Margin.Position.Y);
+            switch (type)
+            {
+                case 0:
+                    break;
+            }
+            // Test purpose types
             if (type == -1)
             {
                 enemy.position.Y += Main.randomNumberGenerator.RandfRange(Main.bulletField.Margin.Position.Y, 
@@ -44,9 +50,9 @@ namespace PathtoDarkSide.Content.Enemies.AI
             ModifyTime?.Invoke(this, e);
         }
 
-        public bool DeathCondition(Vector2 position, Rect2 margin)
+        public bool DeathCondition(Vector2 position)
         {
-            return position.X < margin.Position.X - 20;
+            return position.X < Main.bulletField.Margin.Position.X - 20;
         }
     }
 }

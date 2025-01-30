@@ -7,6 +7,7 @@ using System;
 public partial class Main : Node2D
 {
     public static RandomNumberGenerator randomNumberGenerator = new RandomNumberGenerator();
+    public ulong seed = 0;
     public static BulletField bulletField = new BulletField();
 
     public static int defaultDifficulty;
@@ -20,10 +21,11 @@ public partial class Main : Node2D
     {
         // Load stored default difficulty and set it
         randomNumberGenerator.Randomize();
+        seed = randomNumberGenerator.Seed;
         TexturesTable.Initialize();
         DrawEngine.Initialize();
-        AddChild(DrawEngine.DrawingField);
         bulletField.Initialize(GetViewportRect());
+        AddChild(DrawEngine.DrawingField);
         bulletField.ModifyTime += HandleTimeModeChange;
     }
 

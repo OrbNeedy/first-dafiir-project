@@ -1,19 +1,14 @@
 ﻿using Godot;
 using PathtoDarkSide.Content.Bullets.Emmiters;
 using PathtoDarkSide.Content.Bullets.Emmiters.Patterns;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PathtoDarkSide.Content.Enemies.OffensiveAI
 {
-    public class Attack
+    public class AttackBehavior
     {
         public int type;
 
-        public Attack(int type)
+        public AttackBehavior(int type)
         {
             this.type = type;
         }

@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="TestStage" load_steps=2 format=3 uid="uid://cw4muyid8xa03"]
+
+[ext_resource type="Script" path="res://Content/Stages/TestStage.cs" id="1_xp5nb"]
+
+[resource]
+script = ExtResource("1_xp5nb")

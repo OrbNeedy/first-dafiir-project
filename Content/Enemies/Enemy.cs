@@ -1,6 +1,7 @@
 ﻿using Godot;
 using PathtoDarkSide.Content.Bullets.Emmiters;
 using PathtoDarkSide.Content.Enemies.AI;
+using PathtoDarkSide.Content.Enemies.DeathAI;
 using PathtoDarkSide.Content.Enemies.OffensiveAI;
 using PathtoDarkSide.Content.Utils;
 
@@ -40,12 +41,14 @@ namespace PathtoDarkSide.Content.Enemies
         private Emitter[] emitters;
         public float damageValue;
         private Behavior behavior;
-        private Attack attack;
+        private AttackBehavior attackBehavior;
+        private DeathBehavior? deathBehavior;
 
         public event EventHandler<EnemyDeathEventArgs> Death;
 
-        public Enemy(int texture, float life, BulletField field, Behavior behavior, Attack attack, 
-            Vector2 hitboxSize, Vector2 hurtboxSize, int maxFrameCount = 18, int hitboxShape = 0)
+        public Enemy(int texture, float life, Behavior behavior, DeathBehavior? deathBehavior, 
+            AttackBehavior attackBehavior, Vector2 hitboxSize, Vector2 hurtboxSize, int maxFrameCount = 18, 
+            int hitboxShape = 0)
         {
             texture2DIndex = texture;
             lifePoints = life;
@@ -55,20 +58,21 @@ namespace PathtoDarkSide.Content.Enemies
                 position.Y - (hurtboxSize.Y / 2), 0), new Vector3(hurtboxSize.X, hurtboxSize.Y, 1));
             this.behavior = behavior;
             behavior.Initialize(1, this);
-            this.attack = attack;
-            attack.Initialize(1, 1, ref emitters);
+            this.attackBehavior = attackBehavior;
+            this.deathBehavior = deathBehavior;
+            attackBehavior.Initialize(1, 1, ref emitters);
             this.shape = hitboxShape;
             this.hitboxSize = hitboxSize;
             this.hurtboxSize = hurtboxSize;
             this.maxFrameCount = maxFrameCount;
         }
 
-        public void Update(Rect2 margin, Player? player)
+        public void Update(int difficulty, int speed)
         {
             frameCount++;
 
-            behavior.Update(1, this);
-            attack.Update(1, 1, this, ref emitters);
+            behavior.Update(speed, this);
+            attackBehavior.Update(difficulty, speed, this, ref emitters);
 
             foreach (var emitter in emitters)
             {
@@ -94,10 +98,11 @@ namespace PathtoDarkSide.Content.Enemies
                 }
             }
 
-            if (behavior.DeathCondition(position, margin) && !dead)
+            if (behavior.DeathCondition(position) && !dead)
             {
                 lifePoints = 0;
                 dead = true;
+                deathBehavior?.DeathOccured(this);
                 OnDeath(new EnemyDeathEventArgs(0));
             }
         }

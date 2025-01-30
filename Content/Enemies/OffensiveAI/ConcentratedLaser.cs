@@ -4,7 +4,7 @@ using PathtoDarkSide.Content.Bullets.Emmiters.Patterns;
 
 namespace PathtoDarkSide.Content.Enemies.OffensiveAI
 {
-    public class ConcentratedLaser : Attack
+    public class ConcentratedLaser : AttackBehavior
     {
         public ConcentratedLaser(int type) : base(type)
         {

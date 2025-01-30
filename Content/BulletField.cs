@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using PathtoDarkSide.Content.Enemies;
 using PathtoDarkSide.Content.Bullets.AIs;
+using PathtoDarkSide.Content.Stages;
+using PathtoDarkSide.Content.Enemies.DeathAI;
 
 public enum BulletAttributes
 {
@@ -122,6 +124,36 @@ namespace PathtoDarkSide.Content
         }
     }
 
+    public class SpawnEnemyEventArgs : EventArgs
+    {
+        public Textures texture;
+        public float life;
+        public Behavior behavior;
+        public AttackBehavior attackBehavior;
+        public DeathBehavior? deathBehavior;
+        public Vector2 hitboxSize;
+        public Vector2 hurtboxSize;
+        public int maxFrameCount;
+        public int shape;
+        public bool sealSpawns;
+
+        public SpawnEnemyEventArgs(Textures texture, float life, Behavior behavior, AttackBehavior attackBehavior,
+            Vector2 hitboxSize, Vector2 hurtboxSize, DeathBehavior? deathBehavior = null, int maxFrameCount = 20, 
+            int shape = (int)Shapes.Circle, bool sealSpawns = false)
+        {
+            this.texture = texture;
+            this.life = life;
+            this.behavior = behavior;
+            this.attackBehavior = attackBehavior;
+            this.deathBehavior = deathBehavior;
+            this.hitboxSize = hitboxSize;
+            this.hurtboxSize = hurtboxSize;
+            this.maxFrameCount = maxFrameCount;
+            this.shape = shape;
+            this.sealSpawns = sealSpawns;
+        }
+    }
+
     public class NotifyEventArgs : EventArgs
     {
         public int value;
@@ -134,6 +166,16 @@ namespace PathtoDarkSide.Content
         }
     }
 
+    public class DenySpawnEventArgs : EventArgs
+    {
+        public Enemy source;
+
+        public DenySpawnEventArgs(Enemy source)
+        {
+            this.source = source;
+        }
+    }
+
     public class BulletField
     {
         public Rect2 Margin;
@@ -141,18 +183,14 @@ namespace PathtoDarkSide.Content
         public List<float[]> ActiveBullets = new List<float[]>();
         public List<Enemy> ActiveEnemies = new List<Enemy>();
         public Player Player;
+        public Stage Stage;
         
         public bool hidePlayer = false;
         public bool paused = false;
+        public Enemy? sealEnemy;
+        public bool allowSpawn = true;
 
         public event EventHandler<ModifyTimeEventArgs> ModifyTime;
-
-        public BulletField(Rect2 margin) 
-        {
-            Margin = margin;
-            Player = new Player();
-            AddEnemy(Textures.Pixie, 5000, new Behavior(-2), new ConcentratedLaser(0));
-        }
 
         public BulletField()
         {
@@ -163,7 +201,9 @@ namespace PathtoDarkSide.Content
         {
             Margin = margin;
             Player = new Player();
-            AddEnemy(Textures.Pixie, 5000, new Behavior(-2), new ConcentratedLaser(0));
+            Stage = new Stage();
+            Stage.Initialize();
+            //AddEnemy(Textures.Pixie, 5000, new Behavior(-2), new ConcentratedLaser(0));
         }
 
         public void Update(double delta, bool stoppedTime)
@@ -218,7 +258,7 @@ namespace PathtoDarkSide.Content
             {
                 if ((!stoppedTime || enemy.immuneToStopTime) && !paused)
                 {
-                    enemy.Update(Margin, Player);
+                    enemy.Update(Main.defaultDifficulty, Stage.stageSpeed);
                     if (Player.iFrames <= 0)
                     {
                         if (Player.Collided(enemy))
@@ -239,9 +279,14 @@ namespace PathtoDarkSide.Content
             }
             Player.Draw();
 
+            if (!stoppedTime && !paused)
+            {
+                Stage.Update();
+            }
+
             if (Main.randomNumberGenerator.RandiRange(0, 100) < -10 && !stoppedTime && !paused)
             {
-                AddEnemy(Textures.Pixie, 40, new Behavior(-1), new Attack(0));
+                AddEnemy(Textures.Pixie, 40, new Behavior(-1), new AttackBehavior(0));
             }
         }
 
@@ -267,18 +312,34 @@ namespace PathtoDarkSide.Content
             ActiveBullets.Add(bullet);
         }
 
-        public void AddEnemy(Textures texture, float life, Behavior move, Attack pattern, Vector2 hitboxSize, 
-            Vector2 hurtboxSize, int maxFrameCount = 18, int shape = (int)Shapes.Circle)
+        public void HandleEnemySpawn(object sender, SpawnEnemyEventArgs e)
         {
-            Enemy instance = new Enemy((int)texture, life, this, move, pattern, hitboxSize, hurtboxSize, 
-                maxFrameCount, shape);
-            instance.Death += HandleEnemyDeath;
-            ActiveEnemies.Add(instance);
+            GD.Print("Registered spawn seal enemy: " + sealEnemy);
+            if (allowSpawn && sealEnemy == null)
+            {
+                AddEnemy(e.texture, e.life, e.behavior, e.attackBehavior, e.hitboxSize, e.hurtboxSize, 
+                    e.deathBehavior, e.maxFrameCount, e.shape, e.sealSpawns);
+            }
         }
 
-        public void AddEnemy(Textures texture, float life, Behavior move, Attack pattern, int maxFrameCount = 18)
+        public void AddEnemy(Textures texture, float life, Behavior behavior, AttackBehavior attackBehavior, 
+            Vector2 hitboxSize, Vector2 hurtboxSize, DeathBehavior? deathBehavior = null, int maxFrameCount = 18, 
+            int shape = (int)Shapes.Circle, bool sealSpawns = false)
         {
-            Enemy instance = new Enemy((int)texture, life, this, move, pattern, Vector2.One * 50, 
+            Enemy instance = new Enemy((int)texture, life, behavior, deathBehavior, attackBehavior, hitboxSize, 
+                hurtboxSize, maxFrameCount, shape);
+            instance.Death += HandleEnemyDeath;
+            ActiveEnemies.Add(instance);
+            if (sealSpawns)
+            {
+                sealEnemy = instance;
+            }
+        }
+
+        public void AddEnemy(Textures texture, float life, Behavior move, AttackBehavior pattern, 
+            int maxFrameCount = 18)
+        {
+            Enemy instance = new Enemy((int)texture, life, move, null, pattern, Vector2.One * 50, 
                 Vector2.One * 25, maxFrameCount, (int)Shapes.Circle);
             instance.Death += HandleEnemyDeath;
             ActiveEnemies.Add(instance);
@@ -344,6 +405,10 @@ namespace PathtoDarkSide.Content
         public void HandleEnemyDeath(object sender, EnemyDeathEventArgs e)
         {
             // Add score
+            if (sealEnemy == sender)
+            {
+                sealEnemy = null;
+            }
         }
 
         public void HandleTimeChange(object sender, ModifyTimeEventArgs e)
