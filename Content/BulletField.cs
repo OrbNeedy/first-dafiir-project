@@ -248,8 +248,8 @@ namespace PathtoDarkSide.Content
                 if (!stoppedTime && !paused)
                 {
                     bullet[(int)BulletAttributes.Time] += 1;
-                    BulletCollisionCheck(bullet);
                 }
+                BulletCollisionCheck(bullet);
             }
 
             ActiveBullets.RemoveAll(CheckOutOfBounds);
@@ -259,12 +259,12 @@ namespace PathtoDarkSide.Content
                 if ((!stoppedTime || enemy.immuneToStopTime) && !paused)
                 {
                     enemy.Update(Main.defaultDifficulty, Stage.stageSpeed);
-                    if (Player.iFrames <= 0)
+                }
+                if (Player.iFrames <= 0)
+                {
+                    if (Player.Collided(enemy))
                     {
-                        if (Player.Collided(enemy))
-                        {
-                            Player.OnHit(enemy.damageValue);
-                        }
+                        Player.OnHit(enemy.damageValue);
                     }
                 }
                 enemy.Draw();
@@ -273,7 +273,7 @@ namespace PathtoDarkSide.Content
             ActiveEnemies.RemoveAll((x) => x.dead);
 
             Player.HandleInputs();
-            if (!stoppedTime && !paused)
+            if (!paused)
             {
                 Player.Update(delta, Margin);
             }

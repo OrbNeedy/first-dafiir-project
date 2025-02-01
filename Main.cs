@@ -34,6 +34,17 @@ public partial class Main : Node2D
         float fps = 0;
         if (delta > 0) fps = (float)(60f / (60f * delta));
 
+        /*if (randomNumberGenerator.Randf() <= 0.25f)
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                bulletField.AddProjectile(new Vector2(600, 300), 
+                    Vector2.Right.Rotated(randomNumberGenerator.RandfRange(0, Mathf.Tau)), 0, 
+                    randomNumberGenerator.RandfRange(1, 3), drawScript: (int)DrawTypes.BackAndFront, 
+                    visualParam1: (int)Textures.Inner, visualParam2: (int)Textures.Outer, g: 0, b: 0);
+            }
+        }*/
+
         ProcessInputs();
         bulletField.Update(delta, stoppedTime);
     }

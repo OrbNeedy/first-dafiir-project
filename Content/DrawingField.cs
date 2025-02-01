@@ -3,6 +3,7 @@ using PathtoDarkSide.Content.Utils;
 using static PathtoDarkSide.Content.Utils.VisualTables;
 using System.Collections.Generic;
 using PathtoDarkSide.Content;
+using System.Collections.Specialized;
 
 
 public partial class DrawingField : Control
@@ -29,7 +30,7 @@ public partial class DrawingField : Control
         Color modulate = new Color();
         int frame = 0;
 
-        DrawQueue.Sort((x, y) => (int)x[(int)EffectAttributes.Layer] - (int)y[(int)EffectAttributes.Layer]);
+        //DrawQueue.Sort(CompareByLayer);
 
         foreach (var drawInstruction in DrawQueue)
         {
@@ -49,13 +50,6 @@ public partial class DrawingField : Control
                 frame = TexturesTable.LoadedTextures[(int)drawInstruction[(int)EffectAttributes.Texture]].Length - 1;
             }
             if (frame < 0) frame = 0;
-
-            /*transformMatrix.X.X = drawInstruction[(int)EffectAttributes.TransformXX];
-            transformMatrix.X.Y = drawInstruction[(int)EffectAttributes.TransformXY];
-            transformMatrix.Y.X = drawInstruction[(int)EffectAttributes.TransformYX];
-            transformMatrix.Y.Y = drawInstruction[(int)EffectAttributes.TransformYY];
-            transformMatrix.Origin.X = drawInstruction[(int)EffectAttributes.TransformOX];
-            transformMatrix.Origin.Y = drawInstruction[(int)EffectAttributes.TransformOY];*/
 
             spritePosition.X = drawInstruction[(int)EffectAttributes.PositionX];
             spritePosition.Y = drawInstruction[(int)EffectAttributes.PositionY];
@@ -95,5 +89,19 @@ public partial class DrawingField : Control
         }
 
         DrawQueue.RemoveAll((x) => x[(int)EffectAttributes.Time] <= 0);
+    }
+
+    private int CompareByLayer(float[] instruction1, float[] instruction2)
+    {
+        //(x, y) => (int)x[(int)EffectAttributes.Layer] - (int)y[(int)EffectAttributes.Layer];
+        if (instruction1[(int)EffectAttributes.Layer] < instruction2[(int)EffectAttributes.Layer])
+        {
+            return -1;
+        }
+        if (instruction1[(int)EffectAttributes.Layer] > instruction2[(int)EffectAttributes.Layer])
+        {
+            return 1;
+        }
+        return 0;
     }
 }

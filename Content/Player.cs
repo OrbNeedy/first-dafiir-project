@@ -112,7 +112,7 @@ namespace PathtoDarkSide.Content
             if (iFrames > 0) color = new Color(7f, 0.2f, 0.2f, 0.5f);
             DrawEngine.AddDraw((int)Textures.Player, position.X, position.Y, 0, layer: -1, r: color.R,
                 g: color.G, b: color.B, a: color.A);
-            DrawEngine.AddDraw((int)Textures.Hitbox, position.X, position.Y, 0, layer: 0);
+            DrawEngine.AddDraw((int)Textures.Hitbox, position.X, position.Y, 0, layer: 1);
 
         }
 
